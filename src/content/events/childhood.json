@@ -1,0 +1,562 @@
+[
+    {
+        "id": "first_words",
+        "title": "First Words",
+        "description": "You are trying to say your first words. What do you say?",
+        "icon": "👶",
+        "category": "childhood",
+        "minAge": 1,
+        "maxAge": 2,
+        "weight": 100,
+        "unique": true,
+        "choices": [
+            {
+                "text": "\"Mama\"",
+                "effects": [
+                    {
+                        "type": "stat",
+                        "target": "happiness",
+                        "operation": "add",
+                        "value": 5
+                    }
+                ],
+                "outcomes": [
+                    {
+                        "chance": 1,
+                        "description": "Your mother smiles warmly at you."
+                    }
+                ]
+            },
+            {
+                "text": "\"Dada\"",
+                "effects": [
+                    {
+                        "type": "stat",
+                        "target": "happiness",
+                        "operation": "add",
+                        "value": 5
+                    }
+                ],
+                "outcomes": [
+                    {
+                        "chance": 1,
+                        "description": "Your father smiles warmly at you."
+                    }
+                ]
+            },
+            {
+                "text": "Burp loudly",
+                "effects": [
+                    {
+                        "type": "stat",
+                        "target": "smarts",
+                        "operation": "add",
+                        "value": -2
+                    }
+                ],
+                "outcomes": [
+                    {
+                        "chance": 1,
+                        "description": "Your parents sigh."
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "preschool_bully",
+        "title": "Preschool Drama",
+        "description": "A bigger kid snatches your favorite toy block. What do you do?",
+        "icon": "🧱",
+        "category": "childhood",
+        "minAge": 3,
+        "maxAge": 4,
+        "weight": 50,
+        "cooldown": 2,
+        "choices": [
+            {
+                "text": "Cry loudly",
+                "effects": [
+                    {
+                        "type": "stat",
+                        "target": "happiness",
+                        "operation": "add",
+                        "value": -10
+                    }
+                ]
+            },
+            {
+                "text": "Bite them",
+                "effects": [
+                    {
+                        "type": "stat",
+                        "target": "karma",
+                        "operation": "add",
+                        "value": -10
+                    }
+                ],
+                "outcomes": [
+                    {
+                        "chance": 0.5,
+                        "description": "You get placed in timeout.",
+                        "effects": [
+                            {
+                                "type": "stat",
+                                "target": "happiness",
+                                "operation": "add",
+                                "value": -10
+                            }
+                        ]
+                    },
+                    {
+                        "chance": 0.5,
+                        "description": "They drop the block and run away crying."
+                    }
+                ]
+            },
+            {
+                "text": "Find another block",
+                "effects": [
+                    {
+                        "type": "stat",
+                        "target": "smarts",
+                        "operation": "add",
+                        "value": 5
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "stray_dog",
+        "title": "Stray Dog",
+        "description": "A stray dog approaches you while you are playing outside. It wags its tail.",
+        "icon": "🐕",
+        "category": "childhood",
+        "minAge": 5,
+        "maxAge": 11,
+        "weight": 50,
+        "choices": [
+            {
+                "text": "Pet it gently",
+                "effects": [
+                    {
+                        "type": "stat",
+                        "target": "happiness",
+                        "operation": "add",
+                        "value": 10
+                    }
+                ]
+            },
+            {
+                "text": "Run away",
+                "effects": [
+                    {
+                        "type": "stat",
+                        "target": "happiness",
+                        "operation": "add",
+                        "value": -5
+                    }
+                ]
+            },
+            {
+                "text": "Throw a rock at it",
+                "effects": [
+                    {
+                        "type": "stat",
+                        "target": "karma",
+                        "operation": "add",
+                        "value": -20
+                    }
+                ],
+                "outcomes": [
+                    {
+                        "chance": 0.8,
+                        "description": "The dog runs away whimpering."
+                    },
+                    {
+                        "chance": 0.2,
+                        "description": "The dog bites your ankle!",
+                        "effects": [
+                            {
+                                "type": "stat",
+                                "target": "health",
+                                "operation": "add",
+                                "value": -15
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "spelling_bee",
+        "title": "School Spelling Bee",
+        "description": "You are chosen to represent your class in the spelling bee!",
+        "icon": "🐝",
+        "category": "childhood",
+        "minAge": 7,
+        "maxAge": 11,
+        "weight": 30,
+        "unique": true,
+        "conditions": [
+            {
+                "type": "stat",
+                "target": "smarts",
+                "operator": "gte",
+                "value": 40
+            }
+        ],
+        "choices": [
+            {
+                "text": "Study hard for it",
+                "effects": [
+                    {
+                        "type": "stat",
+                        "target": "happiness",
+                        "operation": "add",
+                        "value": -5
+                    }
+                ],
+                "outcomes": [
+                    {
+                        "chance": 0.7,
+                        "description": "You won the spelling bee! Everyone clapped.",
+                        "effects": [
+                            {
+                                "type": "stat",
+                                "target": "happiness",
+                                "operation": "add",
+                                "value": 20
+                            },
+                            {
+                                "type": "stat",
+                                "target": "smarts",
+                                "operation": "add",
+                                "value": 10
+                            }
+                        ]
+                    },
+                    {
+                        "chance": 0.3,
+                        "description": "You got nervous and misspelled 'Photosynthesis'.",
+                        "effects": [
+                            {
+                                "type": "stat",
+                                "target": "happiness",
+                                "operation": "add",
+                                "value": -10
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "text": "Wing it",
+                "outcomes": [
+                    {
+                        "chance": 0.2,
+                        "description": "You got lucky and guessed the words right!",
+                        "effects": [
+                            {
+                                "type": "stat",
+                                "target": "happiness",
+                                "operation": "add",
+                                "value": 10
+                            }
+                        ]
+                    },
+                    {
+                        "chance": 0.8,
+                        "description": "You failed on the first word.",
+                        "effects": [
+                            {
+                                "type": "stat",
+                                "target": "happiness",
+                                "operation": "add",
+                                "value": -10
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "text": "Pretend to be sick",
+                "effects": [
+                    {
+                        "type": "stat",
+                        "target": "happiness",
+                        "operation": "add",
+                        "value": -5
+                    },
+                    {
+                        "type": "flag",
+                        "target": "skipped_spelling_bee",
+                        "operation": "set",
+                        "value": true
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "first_crush",
+        "title": "First Crush",
+        "description": "You feel butterflies in your stomach when you look at a classmate.",
+        "icon": "😳",
+        "category": "teen",
+        "minAge": 12,
+        "maxAge": 14,
+        "weight": 50,
+        "unique": true,
+        "choices": [
+            {
+                "text": "Write an anonymous letter",
+                "effects": [
+                    {
+                        "type": "stat",
+                        "target": "happiness",
+                        "operation": "add",
+                        "value": 5
+                    }
+                ]
+            },
+            {
+                "text": "Tell your friends",
+                "outcomes": [
+                    {
+                        "chance": 0.5,
+                        "description": "Your friends kept the secret."
+                    },
+                    {
+                        "chance": 0.5,
+                        "description": "They told everyone! You are mortified.",
+                        "effects": [
+                            {
+                                "type": "stat",
+                                "target": "happiness",
+                                "operation": "add",
+                                "value": -20
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "text": "Keep it to yourself",
+                "effects": [
+                    {
+                        "type": "stat",
+                        "target": "happiness",
+                        "operation": "add",
+                        "value": -5
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "driver_license",
+        "title": "Driver's License",
+        "description": "It's time to take your driving test.",
+        "icon": "🚗",
+        "category": "teen",
+        "minAge": 16,
+        "maxAge": 18,
+        "weight": 80,
+        "unique": true,
+        "choices": [
+            {
+                "text": "Take the test carefully",
+                "outcomes": [
+                    {
+                        "chance": 0.8,
+                        "description": "You passed and got your license!",
+                        "effects": [
+                            {
+                                "type": "flag",
+                                "target": "has_driving_license",
+                                "operation": "set",
+                                "value": true
+                            },
+                            {
+                                "type": "stat",
+                                "target": "happiness",
+                                "operation": "add",
+                                "value": 20
+                            }
+                        ]
+                    },
+                    {
+                        "chance": 0.2,
+                        "description": "You failed parallel parking.",
+                        "effects": [
+                            {
+                                "type": "stat",
+                                "target": "happiness",
+                                "operation": "add",
+                                "value": -10
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "text": "Try to bribe the instructor",
+                "effects": [
+                    {
+                        "type": "money",
+                        "operation": "add",
+                        "value": -50
+                    },
+                    {
+                        "type": "stat",
+                        "target": "karma",
+                        "operation": "add",
+                        "value": -20
+                    }
+                ],
+                "outcomes": [
+                    {
+                        "chance": 0.1,
+                        "description": "The instructor secretly takes the cash and passes you.",
+                        "effects": [
+                            {
+                                "type": "flag",
+                                "target": "has_driving_license",
+                                "operation": "set",
+                                "value": true
+                            }
+                        ]
+                    },
+                    {
+                        "chance": 0.9,
+                        "description": "The instructor fails you instantly and calls your parents."
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "money_on_ground",
+        "title": "Found Money",
+        "description": "You found a $50 bill on the ground while walking.",
+        "icon": "💵",
+        "category": "random",
+        "minAge": 10,
+        "maxAge": 100,
+        "weight": 30,
+        "cooldown": 5,
+        "choices": [
+            {
+                "text": "Keep it",
+                "effects": [
+                    {
+                        "type": "money",
+                        "operation": "add",
+                        "value": 50
+                    },
+                    {
+                        "type": "stat",
+                        "target": "karma",
+                        "operation": "add",
+                        "value": -5
+                    }
+                ]
+            },
+            {
+                "text": "Hand it to the police",
+                "effects": [
+                    {
+                        "type": "stat",
+                        "target": "karma",
+                        "operation": "add",
+                        "value": 15
+                    },
+                    {
+                        "type": "stat",
+                        "target": "happiness",
+                        "operation": "add",
+                        "value": 5
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "promotion",
+        "title": "Career Move",
+        "description": "You have an opportunity to impress your boss today.",
+        "icon": "💼",
+        "category": "adult",
+        "minAge": 22,
+        "maxAge": 60,
+        "weight": 20,
+        "cooldown": 3,
+        "choices": [
+            {
+                "text": "Work late",
+                "effects": [
+                    {
+                        "type": "stat",
+                        "target": "happiness",
+                        "operation": "add",
+                        "value": -10
+                    }
+                ],
+                "outcomes": [
+                    {
+                        "chance": 0.5,
+                        "description": "Your boss noticed and gave you a bonus!",
+                        "effects": [
+                            {
+                                "type": "money",
+                                "operation": "add",
+                                "value": 500
+                            },
+                            {
+                                "type": "stat",
+                                "target": "happiness",
+                                "operation": "add",
+                                "value": 15
+                            }
+                        ]
+                    },
+                    {
+                        "chance": 0.5,
+                        "description": "Your boss didn't care. You just lost sleep."
+                    }
+                ]
+            },
+            {
+                "text": "Bring donuts",
+                "effects": [
+                    {
+                        "type": "money",
+                        "operation": "add",
+                        "value": -20
+                    }
+                ],
+                "outcomes": [
+                    {
+                        "chance": 0.8,
+                        "description": "Everyone loved the donuts!",
+                        "effects": [
+                            {
+                                "type": "stat",
+                                "target": "happiness",
+                                "operation": "add",
+                                "value": 10
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "text": "Just do your job normally",
+                "effects": []
+            }
+        ]
+    }
+]

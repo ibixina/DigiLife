@@ -1,0 +1,57 @@
+/* theme.css */
+:root {
+    --bg-color: #0a0a0a;
+    --text-color: #e0e0e0;
+    --text-muted: #888888;
+    --border-color: #333333;
+
+    --accent-color: #00ff00;
+    /* Terminal green */
+    --warn-color: #ffa500;
+    /* Orange/warning */
+    --danger-color: #ff4444;
+    /* Red/negative */
+    --info-color: #4444ff;
+    /* Blue/neutral */
+    --gold-color: #ffd700;
+    /* Gold/achievements */
+
+    --health-color: #ff4444;
+    --happy-color: #ffa500;
+    --smarts-color: #4444ff;
+    --looks-color: #ff69b4;
+    --karma-color: #00ff00;
+
+    --border-radius: 0px;
+    /* Brutalist = square corners */
+    --border-width: 2px;
+    --border-style: solid;
+
+    --font-mono: 'JetBrains Mono', 'Courier New', Courier, monospace;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: var(--font-mono);
+    font-size: 16px;
+    overflow-x: hidden;
+}
+
+/* Scrollbar styling for webkit */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-color);
+    border-left: 1px solid var(--border-color);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
