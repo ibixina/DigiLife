@@ -23,8 +23,3 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
-# Markdown files
-*.md
-!README.md
-!PROGRESS.md
