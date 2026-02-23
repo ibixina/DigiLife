@@ -1,21 +1,44 @@
 import { engine } from '../core/Engine';
 import { events } from '../core/EventBus';
+import { performActivity, getAvailableActivities } from '../systems/ActivitySystem';
+import { interactWithNPC, getAvailableInteractions } from '../systems/RelationshipSystem';
 
 export class Renderer {
   private el: HTMLElement;
   private currentScreen: string = 'TITLE';
 
+  private hasNewActivities: boolean = false;
+  private hasNewInteractions: boolean = false;
+  private lastActivitiesCount: number = 0;
+  private lastInteractionsCount: number = 0;
+
   constructor(elementId: string) {
     this.el = document.getElementById(elementId)!;
     this.render();
 
-    events.on('age_up', () => this.render());
+    events.on('age_up', () => {
+      this.checkNewActions();
+      this.render();
+    });
     events.on('stat_changed', () => this.render());
     events.on('event_triggered', (event: any) => this.renderEventModal(event));
     events.on('death', () => {
       this.currentScreen = 'DEATH';
       this.render();
     });
+  }
+
+  checkNewActions() {
+    const actCount = getAvailableActivities(engine.state).length;
+    if (actCount > this.lastActivitiesCount) this.hasNewActivities = true;
+    this.lastActivitiesCount = actCount;
+
+    let intCount = 0;
+    engine.state.relationships.forEach(npc => {
+      intCount += getAvailableInteractions(engine.state, npc.id).length;
+    });
+    if (intCount > this.lastInteractionsCount) this.hasNewInteractions = true;
+    this.lastInteractionsCount = intCount;
   }
 
   render() {
@@ -73,9 +96,20 @@ export class Renderer {
     fnInput.type = 'text';
     fnInput.placeholder = 'First Name';
 
-    const lnInput = document.createElement('input');
-    lnInput.type = 'text';
-    lnInput.placeholder = 'Last Name';
+    const nationalitySelect = document.createElement('select');
+    const nationalities = [
+      { code: 'USA', flag: '🇺🇸', names: ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones'] },
+      { code: 'UK', flag: '🇬🇧', names: ['Davies', 'Evans', 'Taylor', 'Wilson', 'Thomas'] },
+      { code: 'Japan', flag: '🇯🇵', names: ['Sato', 'Suzuki', 'Takahashi', 'Tanaka', 'Watanabe'] },
+      { code: 'France', flag: '🇫🇷', names: ['Martin', 'Bernard', 'Richard', 'Petit', 'Robert'] },
+      { code: 'Brazil', flag: '🇧🇷', names: ['Silva', 'Santos', 'Oliveira', 'Souza', 'Rodrigues'] }
+    ];
+    nationalities.forEach(n => {
+      const o = document.createElement('option');
+      o.value = n.code;
+      o.innerText = `${n.flag} ${n.code}`;
+      nationalitySelect.appendChild(o);
+    });
 
     const select = document.createElement('select');
     const opts = ['Male', 'Female', 'Non-binary'];
@@ -91,24 +125,18 @@ export class Renderer {
     btn.innerText = 'BEGIN';
     btn.onclick = () => {
       const fn = fnInput.value || 'John';
-      const ln = lnInput.value || 'Doe';
+      const natCode = nationalitySelect.value;
+      const natData = nationalities.find(n => n.code === natCode) || nationalities[0];
+      const ln = natData.names[Math.floor(Math.random() * natData.names.length)];
       const gender = select.value as any;
 
-      engine.state.character = {
-        firstName: fn,
-        lastName: ln,
-        gender,
-        country: 'USA',
-        talent: ''
-      };
-
-      engine.logHistory(0, "You were born a " + gender + " named " + fn + " " + ln + " in the USA.", 'primary');
+      engine.startNewLife(fn, ln, gender as any, natCode);
       this.currentScreen = 'GAME';
       this.render();
     };
 
     form.appendChild(fnInput);
-    form.appendChild(lnInput);
+    form.appendChild(nationalitySelect);
     form.appendChild(select);
     form.appendChild(btn);
 
@@ -121,10 +149,27 @@ export class Renderer {
     const header = document.createElement('header');
     header.className = 'top-bar';
 
+    const monthsPassed = 12 - engine.state.timeBudget;
+
+    const countryFlags: Record<string, string> = {
+      'USA': '🇺🇸',
+      'UK': '🇬🇧',
+      'Japan': '🇯🇵',
+      'France': '🇫🇷',
+      'Brazil': '🇧🇷'
+    };
+    const flag = countryFlags[engine.state.character.country] || '🏳️';
+
     const namePlate = document.createElement('div');
     namePlate.className = 'name-plate';
-    namePlate.innerHTML = engine.state.character.firstName + ' ' + engine.state.character.lastName +
-      ' <span class="text-muted">(Age ' + engine.state.age + ')</span>';
+
+    let timeText = `(Age ${engine.state.age}, ${monthsPassed} mo)`;
+    if (engine.state.currentLocation !== 'Home') {
+      timeText = `(Age ${engine.state.age}) - ${engine.state.currentLocation}: ${engine.state.locationTime}h Left`;
+    }
+
+    namePlate.innerHTML = `${flag} ` + engine.state.character.firstName + ' ' + engine.state.character.lastName +
+      ` <span class="text-muted" style="font-size: 0.8rem; vertical-align: middle;">${timeText}</span>`;
 
     const balance = document.createElement('div');
     balance.className = 'balance';
@@ -132,6 +177,22 @@ export class Renderer {
 
     header.appendChild(namePlate);
     header.appendChild(balance);
+
+    // Only show the progress bar when at Home
+    if (engine.state.currentLocation === 'Home') {
+      const timeProgressBar = document.createElement('div');
+      timeProgressBar.className = 'time-progress-bar';
+
+      const timeProgressInner = document.createElement('div');
+      timeProgressInner.className = 'time-progress-inner';
+
+      // Progress increases from 0 to 100 as timeBudget goes from 12 to 0
+      const p = Math.max(0, Math.min(100, ((12 - engine.state.timeBudget) / 12) * 100));
+      timeProgressInner.style.width = `${p}%`;
+
+      timeProgressBar.appendChild(timeProgressInner);
+      header.appendChild(timeProgressBar);
+    }
 
     const main = document.createElement('main');
     main.className = 'content-area';
@@ -141,7 +202,8 @@ export class Renderer {
 
     const stats: ('health' | 'happiness' | 'smarts' | 'looks')[] = ['health', 'happiness', 'smarts', 'looks'];
     stats.forEach(stat => {
-      const val = engine.state.stats[stat];
+      const rawVal = engine.state.stats[stat];
+      const val = Math.max(0, Math.min(100, Math.round(rawVal)));
       const row = document.createElement('div');
       row.className = 'stat-row';
       row.innerHTML = '<div class="stat-label">' + stat.substring(0, 3) + '</div>' +
@@ -165,19 +227,45 @@ export class Renderer {
       logContainer.appendChild(div);
     }
 
-    const ageUpBtn = document.createElement('button');
-    ageUpBtn.className = 'age-up-btn';
-    ageUpBtn.innerText = 'AGE +1';
-    ageUpBtn.onclick = () => {
-      engine.ageUp();
+    const nav = document.createElement('nav');
+    nav.className = 'tab-bar';
+
+    const activitiesBtn = document.createElement('button');
+    activitiesBtn.className = 'tab-btn' + (this.hasNewActivities ? ' has-new' : '');
+    activitiesBtn.innerHTML = '<span class="tab-icon">⚡</span><span>Activities</span>' + (this.hasNewActivities ? '<span class="new-dot"></span>' : '');
+    activitiesBtn.onclick = () => {
+      this.hasNewActivities = false;
+      activitiesBtn.innerHTML = '<span class="tab-icon">⚡</span><span>Activities</span>';
+      this.renderActivitiesMenu();
     };
 
+    const relsBtn = document.createElement('button');
+    relsBtn.className = 'tab-btn' + (this.hasNewInteractions ? ' has-new' : '');
+    relsBtn.innerHTML = '<span class="tab-icon">👥</span><span>Relations</span>' + (this.hasNewInteractions ? '<span class="new-dot"></span>' : '');
+    relsBtn.onclick = () => {
+      this.hasNewInteractions = false;
+      relsBtn.innerHTML = '<span class="tab-icon">👥</span><span>Relations</span>';
+      this.renderRelationshipsMenu();
+    };
+
+    const ageUpBtn = document.createElement('button');
+    ageUpBtn.className = 'tab-btn';
+    ageUpBtn.style.backgroundColor = 'var(--accent-color)';
+    ageUpBtn.style.color = 'var(--bg-color)';
+    ageUpBtn.style.fontWeight = 'bold';
+    ageUpBtn.innerHTML = '<span class="tab-icon">⏳</span><span>AGE +1</span>';
+    ageUpBtn.onclick = () => engine.ageUp();
+
+    nav.appendChild(activitiesBtn);
+    nav.appendChild(ageUpBtn);
+    nav.appendChild(relsBtn);
+
     main.appendChild(logContainer);
-    main.appendChild(ageUpBtn);
 
     this.el.appendChild(header);
     this.el.appendChild(statsContainer);
     this.el.appendChild(main);
+    this.el.appendChild(nav);
 
     main.scrollTop = main.scrollHeight;
   }
@@ -225,6 +313,166 @@ export class Renderer {
     d.appendChild(choicesContainer);
 
     main.appendChild(d);
+    main.scrollTop = main.scrollHeight;
+  }
+
+  renderActivitiesMenu() {
+    const main = this.el.querySelector('.content-area') as HTMLElement;
+    if (!main) return;
+
+    const existingModal = main.querySelector('.menu-modal');
+    if (existingModal) existingModal.remove();
+
+    const modal = document.createElement('div');
+    modal.className = 'event-card menu-modal';
+
+    const title = document.createElement('div');
+    title.className = 'event-title';
+    title.innerText = `Activities (at ${engine.state.currentLocation})`;
+
+    const choicesContainer = document.createElement('div');
+    choicesContainer.className = 'choices-container';
+
+    const actions = getAvailableActivities(engine.state);
+
+    if (actions.length === 0) {
+      const p = document.createElement('p');
+      p.innerText = 'You don\'t have enough time or money left.';
+      choicesContainer.appendChild(p);
+    }
+
+    modal.appendChild(title);
+    // (Time left now displayed in the global top bar)
+
+    actions.forEach(act => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-card';
+      const costLabel = engine.state.currentLocation === 'Home' && !act.isTravel ? 'Months' : 'Time';
+      btn.innerText = `${act.name} (-${act.timeCost} ${costLabel})`;
+      btn.onclick = () => {
+        performActivity(engine.state, act.id);
+        modal.remove();
+        this.render();
+        // Re-open list if they still have budget
+        if (engine.state.timeBudget > 0 || engine.state.locationTime > 0) this.renderActivitiesMenu();
+      }
+      choicesContainer.appendChild(btn);
+    });
+
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'choice-card text-muted';
+    closeBtn.innerText = 'Close';
+    closeBtn.onclick = () => modal.remove();
+    choicesContainer.appendChild(closeBtn);
+
+    modal.appendChild(choicesContainer);
+    main.appendChild(modal);
+    main.scrollTop = main.scrollHeight;
+  }
+
+  renderRelationshipsMenu() {
+    const main = this.el.querySelector('.content-area') as HTMLElement;
+    if (!main) return;
+
+    const existingModal = main.querySelector('.menu-modal');
+    if (existingModal) existingModal.remove();
+
+    const modal = document.createElement('div');
+    modal.className = 'event-card menu-modal';
+
+    const title = document.createElement('div');
+    title.className = 'event-title';
+    title.innerText = `Relationships (at ${engine.state.currentLocation})`;
+
+    const choicesContainer = document.createElement('div');
+    choicesContainer.className = 'choices-container';
+
+    const rels = engine.state.relationships.filter(r => r.isAlive && r.location === engine.state.currentLocation);
+
+    if (rels.length === 0) {
+      const p = document.createElement('p');
+      p.innerText = 'You have no relationships.';
+      choicesContainer.appendChild(p);
+    }
+
+    rels.forEach(npc => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-card';
+      btn.innerText = `${npc.name} (${npc.type}) - Rel: ${npc.relationshipToPlayer}% | Fam: ${npc.familiarity || 0}%`;
+      btn.onclick = () => this.renderNPCMenu(npc.id, modal);
+      choicesContainer.appendChild(btn);
+    });
+
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'choice-card text-muted';
+    closeBtn.innerText = 'Close';
+    closeBtn.onclick = () => modal.remove();
+    choicesContainer.appendChild(closeBtn);
+
+    modal.appendChild(title);
+    modal.appendChild(choicesContainer);
+    main.appendChild(modal);
+    main.scrollTop = main.scrollHeight;
+  }
+
+  renderNPCMenu(npcId: string, parentModal: HTMLElement) {
+    const main = this.el.querySelector('.content-area') as HTMLElement;
+    if (!main) return;
+    parentModal.remove();
+
+    const existingModal = main.querySelector('.menu-modal');
+    if (existingModal) existingModal.remove();
+
+    const npc = engine.state.relationships.find(r => r.id === npcId);
+    if (!npc) return;
+
+    const modal = document.createElement('div');
+    modal.className = 'event-card menu-modal';
+
+    const title = document.createElement('div');
+    title.className = 'event-title';
+    title.innerText = npc.name;
+
+    // (Time left now displayed in the global top bar)
+
+    const choicesContainer = document.createElement('div');
+    choicesContainer.className = 'choices-container';
+
+    const actions = getAvailableInteractions(engine.state, npcId);
+
+    if (actions.length === 0) {
+      const p = document.createElement('p');
+      p.innerText = 'You don\'t have enough location time or money to interact right now.';
+      choicesContainer.appendChild(p);
+    }
+
+    actions.forEach(intDef => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-card';
+      const costLabel = engine.state.currentLocation === 'Home' ? 'Months' : 'Time';
+      btn.innerText = `${intDef.name} (-${intDef.timeCost} ${costLabel})`;
+      btn.onclick = () => {
+        interactWithNPC(engine.state, npcId, intDef.id);
+        modal.remove();
+        this.render();
+        // Re-open list if they still have budget
+        if (engine.state.timeBudget > 0 || engine.state.locationTime > 0) this.renderNPCMenu(npcId, modal);
+      }
+      choicesContainer.appendChild(btn);
+    });
+
+    const backBtn = document.createElement('button');
+    backBtn.className = 'choice-card text-muted';
+    backBtn.innerText = 'Back';
+    backBtn.onclick = () => {
+      modal.remove();
+      this.renderRelationshipsMenu();
+    }
+    choicesContainer.appendChild(backBtn);
+
+    modal.appendChild(title);
+    modal.appendChild(choicesContainer);
+    main.appendChild(modal);
     main.scrollTop = main.scrollHeight;
   }
 

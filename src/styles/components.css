@@ -248,3 +248,25 @@ select option {
     box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.5);
     animation: slideDown 0.3s ease-out, fadeOut 0.5s ease-in forwards 2.5s;
 }
+
+/* Notification Dot */
+.new-dot {
+    position: absolute;
+    top: 5px;
+    right: 15px;
+    width: 8px;
+    height: 8px;
+    background-color: var(--accent-color);
+    border-radius: 50%;
+    animation: pulse 1s infinite alternate;
+}
+
+@keyframes pulse {
+    from {
+        opacity: 0.6;
+    }
+
+    to {
+        opacity: 1;
+    }
+}

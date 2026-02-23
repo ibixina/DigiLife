@@ -4,6 +4,7 @@ import type { GameState } from './GameState';
 import { EventRegistry } from './EventRegistry';
 import type { GameEvent } from './EventRegistry';
 import { applyEffects } from './EffectSystem';
+import { initializeFamily, ageUpNPCs } from '../systems/RelationshipSystem';
 import { events } from './EventBus';
 
 export class Engine {
@@ -19,16 +20,74 @@ export class Engine {
         this.state = savedState;
     }
 
+    startNewLife(firstName: string, lastName: string, gender: 'Male' | 'Female' | 'Non-binary', country: string) {
+        this.state = createInitialState();
+
+        const talents = ['Academic', 'Athletic', 'Artistic', 'Business', 'Crime', 'Looks', 'Music', 'Political', 'Social', 'Voice'];
+        const randomTalent = talents[Math.floor(Math.random() * talents.length)];
+
+        // Generate basic traits
+        const traitsList = ['Optimist', 'Pessimist', 'Lazy', 'Ambitious', 'Brave', 'Coward', 'Generous', 'Selfish'];
+        const randomTraits: string[] = [];
+        const numTraits = Math.floor(Math.random() * 2) + 1;
+        for (let i = 0; i < numTraits; i++) {
+            const trait = traitsList[Math.floor(Math.random() * traitsList.length)];
+            if (!randomTraits.includes(trait)) randomTraits.push(trait);
+        }
+
+        this.state.character = {
+            firstName,
+            lastName,
+            gender,
+            country,
+            talent: randomTalent,
+            traits: randomTraits
+        };
+
+        // Randomize base stats based on birth
+        this.state.stats.athleticism = Math.floor(Math.random() * 60) + 20;
+        this.state.stats.craziness = Math.floor(Math.random() * 80) + 10;
+        this.state.stats.willpower = Math.floor(Math.random() * 60) + 20;
+        this.state.stats.fertility = Math.floor(Math.random() * 80) + 20;
+        this.state.stats.smarts = Math.floor(Math.random() * 60) + 20;
+        this.state.stats.looks = Math.floor(Math.random() * 80) + 20;
+
+        this.logHistory(0, `You were born a ${gender} named ${firstName} ${lastName} in ${country}.`, 'primary');
+        if (randomTalent) {
+            this.logHistory(0, `You were born with a special talent in ${randomTalent}!`, 'secondary');
+        }
+
+        this.state.timeBudget = 12;
+        initializeFamily(this.state, lastName);
+    }
+
     ageUp() {
         if (!this.state.isAlive) return;
 
         this.state.age += 1;
         this.state.year += 1;
+        this.state.timeBudget = 12;
 
         // Base stat decay/growth
         if (this.state.age > 50) this.state.stats.health -= Math.floor(Math.random() * 3);
         if (this.state.age > 40) this.state.stats.looks -= Math.floor(Math.random() * 2);
         this.state.stats.smarts += Math.floor(Math.random() * 2);
+
+        ageUpNPCs(this.state);
+
+        // Passive heal/decay based on happiness & health
+        if (this.state.stats.happiness > 80 && this.state.stats.health < 100) this.state.stats.health += 1;
+        if (this.state.stats.happiness < 20) this.state.stats.health -= 2;
+
+        // Passive finances
+        if (this.state.finances.debt > 0) {
+            // Apply 5% interest
+            const interest = Math.floor(this.state.finances.debt * 0.05);
+            this.state.finances.debt += interest;
+        }
+
+        const netIncome = this.state.finances.salary - this.state.finances.expenses;
+        this.state.finances.cash += netIncome;
 
         // Clamp
         Object.keys(this.state.stats).forEach(k => {
@@ -55,6 +114,20 @@ export class Engine {
             this.state.deathCause = 'Health complications';
             this.logHistory(this.state.age, `You died of ${this.state.deathCause}.`, 'primary');
             events.emit('death', this.state.deathCause);
+        } else if (this.state.age >= 75) {
+            // Increasing chance to die of old age
+            // At 80: 5%, 90: 15%, 100: 25%, 110: 35%, 122: 100%
+            const baseChance = (this.state.age - 75) / 100;
+            // Health offsets the chance slightly
+            const healthBonus = (this.state.stats.health / 100) * 0.1;
+            const finalChance = Math.max(0.01, baseChance - healthBonus);
+
+            if (Math.random() < finalChance || this.state.age >= 122) {
+                this.state.isAlive = false;
+                this.state.deathCause = 'Old age';
+                this.logHistory(this.state.age, `You died peacefully of ${this.state.deathCause}.`, 'primary');
+                events.emit('death', this.state.deathCause);
+            }
         }
     }
 

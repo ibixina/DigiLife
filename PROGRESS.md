@@ -28,24 +28,24 @@
 
 ---
 
-## 🟡 Phase 2: Core Mechanics & Stats
-**Status: Not Started**
+## 🟢 Phase 2: Core Mechanics & Stats
+**Status: Complete**
 
-- [ ] Fleshed-out Stat System (Hidden stats: Athleticism, Craziness, Willpower, Fertility).
-- [ ] Personality Traits & Special Talents (assigned at birth).
-- [ ] Passive tick recalculation (annual income, loan payments, passive healing/decay).
+- [x] Fleshed-out Stat System (Hidden stats: Athleticism, Craziness, Willpower, Fertility).
+- [x] Personality Traits & Special Talents (assigned at birth).
+- [x] Passive tick recalculation (annual income, loan payments, passive healing/decay).
 
 ---
 
-## 🔴 Phase 3: Life Stages, Activities & Relationships
-**Status: Not Started**
+## � Phase 3: Life Stages, Activities & Relationships
+**Status: In Progress**
 
 - [ ] **Relationships System**:
-  - [ ] NPC generator for parents, siblings, friends, coworkers.
-  - [ ] Interaction menus (Spend time, converse, argue, gift, ask for money).
+  - [x] NPC generator for parents, siblings, friends, coworkers.
+  - [x] Interaction menus (Spend time, converse, argue, gift, ask for money).
   - [ ] Romance (Dating, marriage, divorce, child-rearing).
 - [ ] **Activities & Leisure**:
-  - [ ] Daily actions (Read book, meditate, movie theater).
+  - [x] Daily actions (Read book, meditate, movie theater).
   - [ ] Pets (Adopt, train, care for).
 
 ---

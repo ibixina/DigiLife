@@ -1,6 +1,24 @@
 // GameState.ts
 export type Gender = 'Male' | 'Female' | 'Non-binary';
 
+export interface Relationship {
+  id: string;
+  name: string;
+  type: 'Father' | 'Mother' | 'Brother' | 'Sister' | 'Friend' | 'Enemy' | 'Pet' | 'Partner' | 'Child' | 'Co-worker' | 'Boss' | 'Teacher' | 'Classmate';
+  gender: Gender | 'Unknown';
+  age: number;
+  health: number;
+  happiness: number;
+  smarts: number;
+  looks: number;
+  relationshipToPlayer: number; // 0-100
+  familiarity: number; // 0-100, decays over time, increases with interaction
+  location: string;
+  isAlive: boolean;
+  traits: string[];
+}
+
+
 export interface HistoryEntry {
   age: number;
   year: number;
@@ -14,6 +32,7 @@ export interface Character {
   gender: Gender;
   country: string;
   talent: string;
+  traits: string[];
 }
 
 export interface Stats {
@@ -22,6 +41,17 @@ export interface Stats {
   smarts: number;
   looks: number;
   karma: number;
+  athleticism: number;
+  craziness: number;
+  willpower: number;
+  fertility: number;
+}
+
+export interface FinanceState {
+  cash: number;
+  salary: number;
+  expenses: number;
+  debt: number;
 }
 
 export interface GameState {
@@ -34,9 +64,12 @@ export interface GameState {
   year: number;
   isAlive: boolean;
   deathCause: string | null;
-  finances: {
-    cash: number;
-  };
+  finances: FinanceState;
+  relationships: Relationship[];
+  timeBudget: number;
+  locationTime: number;
+  currentLocation: string;
+  activitiesExperience: Record<string, number>;
 }
 
 export function createInitialState(): GameState {
@@ -48,6 +81,7 @@ export function createInitialState(): GameState {
       gender: 'Non-binary',
       country: '',
       talent: '',
+      traits: [],
     },
     stats: {
       health: 80,
@@ -55,6 +89,10 @@ export function createInitialState(): GameState {
       smarts: 50,
       looks: 50,
       karma: 50,
+      athleticism: 50,
+      craziness: 50,
+      willpower: 50,
+      fertility: 50,
     },
     flags: {},
     history: [],
@@ -62,6 +100,11 @@ export function createInitialState(): GameState {
     year: new Date().getFullYear(),
     isAlive: true,
     deathCause: null,
-    finances: { cash: 0 },
+    finances: { cash: 0, salary: 0, expenses: 0, debt: 0 },
+    relationships: [],
+    timeBudget: 12,
+    locationTime: 10,
+    currentLocation: 'Home',
+    activitiesExperience: {},
   };
 }
