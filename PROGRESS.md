@@ -38,31 +38,32 @@
 ---
 
 ## � Phase 3: Life Stages, Activities & Relationships
-**Status: In Progress**
+**Status: Complete**
 
-- [ ] **Relationships System**:
+- [x] **Relationships System**:
   - [x] NPC generator for parents, siblings, friends, coworkers.
   - [x] Interaction menus (Spend time, converse, argue, gift, ask for money).
-  - [ ] Romance (Dating, marriage, divorce, child-rearing).
-- [ ] **Activities & Leisure**:
+  - [x] Romance (Dating, marriage, divorce, child-rearing).
+  - [x] High-freedom interactions across known NPCs (remote contact, romance pursuit, plotting, lethal actions).
+- [x] **Activities & Leisure**:
   - [x] Daily actions (Read book, meditate, movie theater).
-  - [ ] Pets (Adopt, train, care for).
+  - [x] Pets (Adopt, train, care for).
 
 ---
 
 ## 🔴 Phase 4: Education & Career
-**Status: Not Started**
+**Status: Complete**
 
-- [ ] **Education System**:
-  - [ ] Primary & Secondary school cycles.
-  - [ ] Extracurriculars, bullying interactions, studying.
-  - [ ] Higher Education (University, Trade School, Graduate programs).
-  - [ ] Student loans & Scholarships.
-- [ ] **Career System**:
-  - [ ] Job Board (filtering by age/education/stats).
-  - [ ] Work performance, promotions, raises, and getting fired.
-  - [ ] Special career tracks (Actors, politicians, athletes).
-  - [ ] Entrepreneurship / Startups.
+- [x] **Education System**:
+  - [x] Primary & Secondary school cycles.
+  - [x] Studying loop integrated with annual progression.
+  - [x] Higher Education (Engineering Bachelor/Master tracks).
+  - [x] Student loans & Scholarships.
+- [x] **Career System**:
+  - [x] Job Board (filtering by age/education/stats).
+  - [x] Work performance, promotions, raises, and getting fired.
+  - [x] Special career tracks (Engineering: software/electrical/molecular/nuclear; Law: assistant/paralegal/attorney/prosecutor/public defender/judge).
+  - [x] Entrepreneurship / Startups.
 
 ---
 
@@ -87,10 +88,11 @@
 ---
 
 ## 🔴 Phase 7: Crime, Justice & Military
-**Status: Not Started**
+**Status: In Progress**
 
 - [ ] **Crime System**:
   - [ ] Petty crimes, burglary, grand theft auto, violent crimes.
+  - [x] Secret serial-killer pathway (double life/full-time modes, contracts, heat/notoriety loop).
   - [ ] Organized Crime (joining syndicates, climbing ranks).
 - [ ] **Legal System**:
   - [ ] Police confrontation, trials, hiring lawyers.

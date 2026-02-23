@@ -1,0 +1,78 @@
+[
+  {
+    "id": "software_engineer",
+    "title": "Software Engineer",
+    "field": "Engineering",
+    "specialization": "Software",
+    "requiredEducation": "Bachelor",
+    "minAge": 21,
+    "minSmarts": 62,
+    "minWillpower": 45,
+    "startSalary": 90000,
+    "annualRaise": 0.07,
+    "difficulty": 0.58,
+    "promotionTitles": [
+      "Software Engineer I",
+      "Software Engineer II",
+      "Senior Software Engineer",
+      "Principal Software Engineer"
+    ]
+  },
+  {
+    "id": "electrical_engineer",
+    "title": "Electrical Engineer",
+    "field": "Engineering",
+    "specialization": "Electrical",
+    "requiredEducation": "Bachelor",
+    "minAge": 21,
+    "minSmarts": 64,
+    "minWillpower": 48,
+    "startSalary": 94000,
+    "annualRaise": 0.07,
+    "difficulty": 0.62,
+    "promotionTitles": [
+      "Electrical Engineer I",
+      "Electrical Engineer II",
+      "Senior Electrical Engineer",
+      "Principal Electrical Engineer"
+    ]
+  },
+  {
+    "id": "molecular_engineer",
+    "title": "Molecular Engineer",
+    "field": "Engineering",
+    "specialization": "Molecular",
+    "requiredEducation": "Master",
+    "minAge": 23,
+    "minSmarts": 74,
+    "minWillpower": 58,
+    "startSalary": 118000,
+    "annualRaise": 0.08,
+    "difficulty": 0.74,
+    "promotionTitles": [
+      "Molecular Engineer I",
+      "Molecular Engineer II",
+      "Senior Molecular Engineer",
+      "Principal Molecular Engineer"
+    ]
+  },
+  {
+    "id": "nuclear_engineer",
+    "title": "Nuclear Engineer",
+    "field": "Engineering",
+    "specialization": "Nuclear",
+    "requiredEducation": "Master",
+    "minAge": 24,
+    "minSmarts": 78,
+    "minWillpower": 62,
+    "startSalary": 132000,
+    "annualRaise": 0.09,
+    "difficulty": 0.82,
+    "promotionTitles": [
+      "Nuclear Engineer I",
+      "Nuclear Engineer II",
+      "Senior Nuclear Engineer",
+      "Principal Nuclear Engineer"
+    ]
+  }
+]

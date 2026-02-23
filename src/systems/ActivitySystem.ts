@@ -11,6 +11,7 @@ export interface ActivityDef {
     isTravel?: boolean;
     travelTo?: string;
     locationTimeGranted?: number;
+    isAvailable?: (state: GameState) => boolean;
     perform: (state: GameState, addStat: (stat: keyof GameState['stats'], baseGain: number) => void) => void;
 }
 
@@ -118,12 +119,77 @@ export const ACTIVITIES: Record<string, ActivityDef> = {
             addStat('looks', Math.floor(Math.random() * 3));
             state.history.push({ age: state.age, year: state.year, text: 'You worked out hard at the gym.', type: 'secondary' });
         }
+    },
+    'Adopt Pet': {
+        id: 'Adopt Pet', name: 'Adopt Pet', minAge: 8, cost: 50, timeCost: 2, requiresLocation: 'Home',
+        isAvailable: (state) => state.relationships.filter(r => r.type === 'Pet' && r.isAlive).length < 3,
+        perform: (state, addStat) => {
+            const petKinds = ['Dog', 'Cat', 'Rabbit', 'Parrot', 'Turtle'];
+            const petNames = ['Milo', 'Luna', 'Nova', 'Coco', 'Rocky', 'Peanut', 'Pixel', 'Mocha'];
+            const kind = petKinds[Math.floor(Math.random() * petKinds.length)];
+            const name = petNames[Math.floor(Math.random() * petNames.length)];
+
+            state.relationships.push({
+                id: `pet_${Date.now()}_${Math.floor(Math.random() * 1000000)}`,
+                name,
+                type: 'Pet',
+                gender: 'Unknown',
+                age: Math.floor(Math.random() * 8) + 1,
+                health: 80,
+                happiness: 80,
+                smarts: 35,
+                looks: 50,
+                relationshipToPlayer: 80,
+                familiarity: 80,
+                location: 'Home',
+                isAlive: true,
+                traits: [kind]
+            });
+
+            addStat('happiness', 8);
+            addStat('karma', 4);
+            state.history.push({ age: state.age, year: state.year, text: `You adopted a ${kind.toLowerCase()} named ${name}.`, type: 'primary' });
+        }
+    },
+    'Train Pet': {
+        id: 'Train Pet', name: 'Train Pet', minAge: 8, cost: 0, timeCost: 2, requiresLocation: 'Home',
+        isAvailable: (state) => state.relationships.some(r => r.type === 'Pet' && r.isAlive && r.location === 'Home'),
+        perform: (state, addStat) => {
+            const pets = state.relationships.filter(r => r.type === 'Pet' && r.isAlive && r.location === 'Home');
+            const pet = pets[Math.floor(Math.random() * pets.length)];
+            if (!pet) return;
+
+            pet.smarts = Math.min(100, pet.smarts + Math.floor(Math.random() * 8) + 4);
+            pet.relationshipToPlayer = Math.min(100, pet.relationshipToPlayer + Math.floor(Math.random() * 8) + 3);
+            pet.familiarity = Math.min(100, pet.familiarity + Math.floor(Math.random() * 10) + 5);
+            addStat('willpower', 2);
+            addStat('happiness', 2);
+            state.history.push({ age: state.age, year: state.year, text: `You trained ${pet.name}.`, type: 'secondary' });
+        }
+    },
+    'Care For Pet': {
+        id: 'Care For Pet', name: 'Care For Pet', minAge: 4, cost: 5, timeCost: 1, requiresLocation: 'Home',
+        isAvailable: (state) => state.relationships.some(r => r.type === 'Pet' && r.isAlive && r.location === 'Home'),
+        perform: (state, addStat) => {
+            const pets = state.relationships.filter(r => r.type === 'Pet' && r.isAlive && r.location === 'Home');
+            const pet = pets[Math.floor(Math.random() * pets.length)];
+            if (!pet) return;
+
+            pet.health = Math.min(100, pet.health + Math.floor(Math.random() * 8) + 4);
+            pet.happiness = Math.min(100, pet.happiness + Math.floor(Math.random() * 10) + 6);
+            pet.familiarity = Math.min(100, pet.familiarity + Math.floor(Math.random() * 10) + 5);
+            pet.relationshipToPlayer = Math.min(100, pet.relationshipToPlayer + Math.floor(Math.random() * 6) + 3);
+            addStat('happiness', 4);
+            addStat('karma', 2);
+            state.history.push({ age: state.age, year: state.year, text: `You cared for ${pet.name}.`, type: 'secondary' });
+        }
     }
 };
 
 export function getAvailableActivities(state: GameState): ActivityDef[] {
     return Object.values(ACTIVITIES).filter(act => {
         if (state.age < act.minAge || state.finances.cash < act.cost) return false;
+        if (act.isAvailable && !act.isAvailable(state)) return false;
 
         if (act.isTravel) {
             // Can only travel if at Home, OR if the travel is "Go Home"

@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "test": "tsc -p tsconfig.test.json && echo '{\"type\":\"commonjs\"}' > dist-tests/package.json && node dist-tests/tests/testRunner.js",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },

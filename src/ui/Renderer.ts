@@ -2,6 +2,8 @@ import { engine } from '../core/Engine';
 import { events } from '../core/EventBus';
 import { performActivity, getAvailableActivities } from '../systems/ActivitySystem';
 import { interactWithNPC, getAvailableInteractions } from '../systems/RelationshipSystem';
+import { getAvailableEducationActions, performEducationAction } from '../systems/EducationSystem';
+import { getAvailableCareerActions, performCareerAction } from '../systems/CareerSystem';
 
 export class Renderer {
   private el: HTMLElement;
@@ -9,8 +11,10 @@ export class Renderer {
 
   private hasNewActivities: boolean = false;
   private hasNewInteractions: boolean = false;
+  private hasNewCareerActions: boolean = false;
   private lastActivitiesCount: number = 0;
   private lastInteractionsCount: number = 0;
+  private lastCareerActionsCount: number = 0;
 
   constructor(elementId: string) {
     this.el = document.getElementById(elementId)!;
@@ -39,6 +43,12 @@ export class Renderer {
     });
     if (intCount > this.lastInteractionsCount) this.hasNewInteractions = true;
     this.lastInteractionsCount = intCount;
+
+    const careerActions = getAvailableCareerActions(engine.state).length;
+    const educationActions = getAvailableEducationActions(engine.state).length;
+    const careerCount = careerActions + educationActions;
+    if (careerCount > this.lastCareerActionsCount) this.hasNewCareerActions = true;
+    this.lastCareerActionsCount = careerCount;
   }
 
   render() {
@@ -248,6 +258,15 @@ export class Renderer {
       this.renderRelationshipsMenu();
     };
 
+    const careerBtn = document.createElement('button');
+    careerBtn.className = 'tab-btn' + (this.hasNewCareerActions ? ' has-new' : '');
+    careerBtn.innerHTML = '<span class="tab-icon">💼</span><span>Career</span>' + (this.hasNewCareerActions ? '<span class="new-dot"></span>' : '');
+    careerBtn.onclick = () => {
+      this.hasNewCareerActions = false;
+      careerBtn.innerHTML = '<span class="tab-icon">💼</span><span>Career</span>';
+      this.renderCareerMenu();
+    };
+
     const ageUpBtn = document.createElement('button');
     ageUpBtn.className = 'tab-btn';
     ageUpBtn.style.backgroundColor = 'var(--accent-color)';
@@ -258,6 +277,7 @@ export class Renderer {
 
     nav.appendChild(activitiesBtn);
     nav.appendChild(ageUpBtn);
+    nav.appendChild(careerBtn);
     nav.appendChild(relsBtn);
 
     main.appendChild(logContainer);
@@ -382,23 +402,23 @@ export class Renderer {
 
     const title = document.createElement('div');
     title.className = 'event-title';
-    title.innerText = `Relationships (at ${engine.state.currentLocation})`;
+    title.innerText = 'Relationships';
 
     const choicesContainer = document.createElement('div');
     choicesContainer.className = 'choices-container';
 
-    const rels = engine.state.relationships.filter(r => r.isAlive && r.location === engine.state.currentLocation);
+    const rels = engine.state.relationships.filter(r => r.isAlive && ((r.familiarity || 0) > 0 || r.relationshipToPlayer > 0));
 
     if (rels.length === 0) {
       const p = document.createElement('p');
-      p.innerText = 'You have no relationships.';
+      p.innerText = 'You do not know anyone yet.';
       choicesContainer.appendChild(p);
     }
 
     rels.forEach(npc => {
       const btn = document.createElement('button');
       btn.className = 'choice-card';
-      btn.innerText = `${npc.name} (${npc.type}) - Rel: ${npc.relationshipToPlayer}% | Fam: ${npc.familiarity || 0}%`;
+      btn.innerText = `${npc.name} (${npc.type}) @ ${npc.location} - Rel: ${npc.relationshipToPlayer}% | Fam: ${npc.familiarity || 0}%`;
       btn.onclick = () => this.renderNPCMenu(npc.id, modal);
       choicesContainer.appendChild(btn);
     });
@@ -410,6 +430,87 @@ export class Renderer {
     choicesContainer.appendChild(closeBtn);
 
     modal.appendChild(title);
+    modal.appendChild(choicesContainer);
+    main.appendChild(modal);
+    main.scrollTop = main.scrollHeight;
+  }
+
+  renderCareerMenu() {
+    const main = this.el.querySelector('.content-area') as HTMLElement;
+    if (!main) return;
+
+    const existingModal = main.querySelector('.menu-modal');
+    if (existingModal) existingModal.remove();
+
+    const modal = document.createElement('div');
+    modal.className = 'event-card menu-modal';
+
+    const title = document.createElement('div');
+    title.className = 'event-title';
+    title.innerText = 'Education & Career';
+
+    const status = document.createElement('div');
+    status.className = 'event-desc';
+    const educationText = engine.state.education.inProgram
+      ? `${engine.state.education.programName} (Year ${engine.state.education.programYearsCompleted + 1})`
+      : engine.state.education.level;
+    const careerText = engine.state.career.title
+      ? `${engine.state.career.title} ($${engine.state.finances.salary.toLocaleString()}/yr, Perf ${engine.state.career.performance}%)`
+      : 'Unemployed';
+    const barText = engine.state.flags.license_bar ? 'Licensed' : 'Not Licensed';
+    const shadow = engine.state.serialKiller;
+    const shadowText = shadow.unlocked
+      ? `${shadow.mode} | Alias: ${shadow.alias || 'Unknown'} | Heat ${shadow.heat}% | Notoriety ${shadow.notoriety}% | Kills ${shadow.kills}`
+      : 'Dormant';
+    status.innerText = `Education: ${educationText} | GPA ${engine.state.education.gpa.toFixed(2)} | Bar: ${barText}\nCareer: ${careerText} | Law Exp: ${engine.state.career.lawYearsExperience}y | Licensed Exp: ${engine.state.career.licensedLawYearsExperience}y\nShadow Career: ${shadowText}`;
+
+    const choicesContainer = document.createElement('div');
+    choicesContainer.className = 'choices-container';
+
+    const educationActions = getAvailableEducationActions(engine.state);
+    const careerActions = getAvailableCareerActions(engine.state);
+    const allActions = [...educationActions, ...careerActions];
+
+    if (allActions.length === 0) {
+      const p = document.createElement('p');
+      p.innerText = 'No education/career actions available right now.';
+      choicesContainer.appendChild(p);
+    }
+
+    educationActions.forEach(action => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-card';
+      btn.innerText = `📘 ${action.name} (-${action.timeCost} Time)`;
+      btn.onclick = () => {
+        performEducationAction(engine.state, action.id);
+        modal.remove();
+        this.render();
+        this.renderCareerMenu();
+      };
+      choicesContainer.appendChild(btn);
+    });
+
+    careerActions.forEach(action => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-card';
+      btn.innerText = `💼 ${action.name} (-${action.timeCost} Time)`;
+      btn.onclick = () => {
+        performCareerAction(engine.state, action.id);
+        modal.remove();
+        this.render();
+        this.renderCareerMenu();
+      };
+      choicesContainer.appendChild(btn);
+    });
+
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'choice-card text-muted';
+    closeBtn.innerText = 'Close';
+    closeBtn.onclick = () => modal.remove();
+    choicesContainer.appendChild(closeBtn);
+
+    modal.appendChild(title);
+    modal.appendChild(status);
     modal.appendChild(choicesContainer);
     main.appendChild(modal);
     main.scrollTop = main.scrollHeight;

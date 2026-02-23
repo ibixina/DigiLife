@@ -1,0 +1,124 @@
+[
+  {
+    "id": "legal_assistant",
+    "title": "Legal Assistant",
+    "field": "Law",
+    "specialization": "Legal Operations",
+    "requiredEducation": "High School",
+    "minAge": 18,
+    "minSmarts": 52,
+    "minWillpower": 40,
+    "startSalary": 48000,
+    "annualRaise": 0.05,
+    "difficulty": 0.38,
+    "promotionTitles": [
+      "Legal Assistant I",
+      "Legal Assistant II",
+      "Senior Legal Assistant",
+      "Lead Legal Operations Specialist"
+    ]
+  },
+  {
+    "id": "paralegal",
+    "title": "Paralegal",
+    "field": "Law",
+    "specialization": "Paralegal",
+    "requiredEducation": "Bachelor",
+    "minAge": 21,
+    "minSmarts": 60,
+    "minWillpower": 45,
+    "startSalary": 62000,
+    "annualRaise": 0.06,
+    "difficulty": 0.5,
+    "promotionTitles": [
+      "Paralegal I",
+      "Paralegal II",
+      "Senior Paralegal",
+      "Litigation Paralegal Lead"
+    ]
+  },
+  {
+    "id": "corporate_attorney",
+    "title": "Corporate Attorney",
+    "field": "Law",
+    "specialization": "Corporate Law",
+    "requiredEducation": "Doctorate",
+    "requiredMajors": ["Law"],
+    "requiredFlagsAll": ["license_bar"],
+    "minAge": 24,
+    "minSmarts": 76,
+    "minWillpower": 62,
+    "startSalary": 145000,
+    "annualRaise": 0.09,
+    "difficulty": 0.78,
+    "promotionTitles": [
+      "Junior Associate Attorney",
+      "Associate Attorney",
+      "Senior Associate Attorney",
+      "Partner"
+    ]
+  },
+  {
+    "id": "prosecutor",
+    "title": "Prosecutor",
+    "field": "Law",
+    "specialization": "Criminal Prosecution",
+    "requiredEducation": "Doctorate",
+    "requiredMajors": ["Law"],
+    "requiredFlagsAll": ["license_bar"],
+    "minAge": 24,
+    "minSmarts": 74,
+    "minWillpower": 68,
+    "startSalary": 112000,
+    "annualRaise": 0.08,
+    "difficulty": 0.74,
+    "promotionTitles": [
+      "Assistant District Attorney",
+      "Deputy District Attorney",
+      "Senior Prosecutor",
+      "Chief Prosecutor"
+    ]
+  },
+  {
+    "id": "public_defender",
+    "title": "Public Defender",
+    "field": "Law",
+    "specialization": "Criminal Defense",
+    "requiredEducation": "Doctorate",
+    "requiredMajors": ["Law"],
+    "requiredFlagsAll": ["license_bar"],
+    "minAge": 24,
+    "minSmarts": 72,
+    "minWillpower": 70,
+    "startSalary": 98000,
+    "annualRaise": 0.08,
+    "difficulty": 0.72,
+    "promotionTitles": [
+      "Assistant Public Defender",
+      "Public Defender",
+      "Senior Public Defender",
+      "Chief Public Defender"
+    ]
+  },
+  {
+    "id": "judge",
+    "title": "Judge",
+    "field": "Law",
+    "specialization": "Judiciary",
+    "requiredEducation": "Doctorate",
+    "requiredMajors": ["Law"],
+    "requiredFlagsAll": ["license_bar"],
+    "requiredLicensedLawYears": 8,
+    "minAge": 35,
+    "minSmarts": 84,
+    "minWillpower": 78,
+    "startSalary": 185000,
+    "annualRaise": 0.07,
+    "difficulty": 0.9,
+    "promotionTitles": [
+      "Trial Judge",
+      "Senior Judge",
+      "Chief Judge"
+    ]
+  }
+]

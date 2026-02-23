@@ -54,6 +54,46 @@ export interface FinanceState {
   debt: number;
 }
 
+export interface EducationState {
+  level: 'None' | 'Primary' | 'Secondary' | 'High School' | 'Bachelor' | 'Master' | 'Doctorate';
+  major: string | null;
+  inProgram: boolean;
+  programId: string | null;
+  programName: string | null;
+  programYearsCompleted: number;
+  gpa: number;
+  studyEffort: number;
+  scholarships: number;
+  studentDebt: number;
+}
+
+export interface CareerState {
+  id: string | null;
+  title: string | null;
+  field: string | null;
+  specialization: string | null;
+  yearsInRole: number;
+  totalYearsExperience: number;
+  lawYearsExperience: number;
+  licensedLawYearsExperience: number;
+  performance: number;
+  level: number;
+  rejections: number;
+}
+
+export interface SerialKillerState {
+  unlocked: boolean;
+  caught: boolean;
+  mode: 'none' | 'double_life' | 'full_time';
+  alias: string | null;
+  kills: number;
+  contractsCompleted: number;
+  notoriety: number; // 0-100
+  heat: number; // 0-100
+  lastKillYear: number | null;
+  lastContractYear: number | null;
+}
+
 export interface GameState {
   version: string;
   character: Character;
@@ -65,6 +105,9 @@ export interface GameState {
   isAlive: boolean;
   deathCause: string | null;
   finances: FinanceState;
+  education: EducationState;
+  career: CareerState;
+  serialKiller: SerialKillerState;
   relationships: Relationship[];
   timeBudget: number;
   locationTime: number;
@@ -101,6 +144,43 @@ export function createInitialState(): GameState {
     isAlive: true,
     deathCause: null,
     finances: { cash: 0, salary: 0, expenses: 0, debt: 0 },
+    education: {
+      level: 'None',
+      major: null,
+      inProgram: false,
+      programId: null,
+      programName: null,
+      programYearsCompleted: 0,
+      gpa: 2.5,
+      studyEffort: 0,
+      scholarships: 0,
+      studentDebt: 0,
+    },
+    career: {
+      id: null,
+      title: null,
+      field: null,
+      specialization: null,
+      yearsInRole: 0,
+      totalYearsExperience: 0,
+      lawYearsExperience: 0,
+      licensedLawYearsExperience: 0,
+      performance: 50,
+      level: 0,
+      rejections: 0,
+    },
+    serialKiller: {
+      unlocked: false,
+      caught: false,
+      mode: 'none',
+      alias: null,
+      kills: 0,
+      contractsCompleted: 0,
+      notoriety: 0,
+      heat: 0,
+      lastKillYear: null,
+      lastContractYear: null,
+    },
     relationships: [],
     timeBudget: 12,
     locationTime: 10,

@@ -5,6 +5,8 @@ import { EventRegistry } from './EventRegistry';
 import type { GameEvent } from './EventRegistry';
 import { applyEffects } from './EffectSystem';
 import { initializeFamily, ageUpNPCs } from '../systems/RelationshipSystem';
+import { processEducationYear } from '../systems/EducationSystem';
+import { processCareerYear, processSerialKillerYear } from '../systems/CareerSystem';
 import { events } from './EventBus';
 
 export class Engine {
@@ -18,6 +20,64 @@ export class Engine {
 
     loadState(savedState: GameState) {
         this.state = savedState;
+        if (!this.state.education) {
+            this.state.education = {
+                level: 'None',
+                major: null,
+                inProgram: false,
+                programId: null,
+                programName: null,
+                programYearsCompleted: 0,
+                gpa: 2.5,
+                studyEffort: 0,
+                scholarships: 0,
+                studentDebt: 0
+            };
+        }
+        if (!this.state.career) {
+            this.state.career = {
+                id: null,
+                title: null,
+                field: null,
+                specialization: null,
+                yearsInRole: 0,
+                totalYearsExperience: 0,
+                lawYearsExperience: 0,
+                licensedLawYearsExperience: 0,
+                performance: 50,
+                level: 0,
+                rejections: 0
+            };
+        } else {
+            if (this.state.career.totalYearsExperience === undefined) this.state.career.totalYearsExperience = 0;
+            if (this.state.career.lawYearsExperience === undefined) this.state.career.lawYearsExperience = 0;
+            if (this.state.career.licensedLawYearsExperience === undefined) this.state.career.licensedLawYearsExperience = 0;
+        }
+        if (!this.state.serialKiller) {
+            this.state.serialKiller = {
+                unlocked: false,
+                caught: false,
+                mode: 'none',
+                alias: null,
+                kills: 0,
+                contractsCompleted: 0,
+                notoriety: 0,
+                heat: 0,
+                lastKillYear: null,
+                lastContractYear: null
+            };
+        } else {
+            if (this.state.serialKiller.unlocked === undefined) this.state.serialKiller.unlocked = false;
+            if (this.state.serialKiller.caught === undefined) this.state.serialKiller.caught = false;
+            if (this.state.serialKiller.mode === undefined) this.state.serialKiller.mode = 'none';
+            if (this.state.serialKiller.alias === undefined) this.state.serialKiller.alias = null;
+            if (this.state.serialKiller.kills === undefined) this.state.serialKiller.kills = 0;
+            if (this.state.serialKiller.contractsCompleted === undefined) this.state.serialKiller.contractsCompleted = 0;
+            if (this.state.serialKiller.notoriety === undefined) this.state.serialKiller.notoriety = 0;
+            if (this.state.serialKiller.heat === undefined) this.state.serialKiller.heat = 0;
+            if (this.state.serialKiller.lastKillYear === undefined) this.state.serialKiller.lastKillYear = null;
+            if (this.state.serialKiller.lastContractYear === undefined) this.state.serialKiller.lastContractYear = null;
+        }
     }
 
     startNewLife(firstName: string, lastName: string, gender: 'Male' | 'Female' | 'Non-binary', country: string) {
@@ -73,6 +133,9 @@ export class Engine {
         if (this.state.age > 40) this.state.stats.looks -= Math.floor(Math.random() * 2);
         this.state.stats.smarts += Math.floor(Math.random() * 2);
 
+        processEducationYear(this.state);
+        processCareerYear(this.state);
+        processSerialKillerYear(this.state);
         ageUpNPCs(this.state);
 
         // Passive heal/decay based on happiness & health

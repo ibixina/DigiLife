@@ -1,0 +1,52 @@
+[
+  {
+    "id": "debt_collector",
+    "codename": "Debt Collector",
+    "minAge": 18,
+    "minNotoriety": 0,
+    "payout": 18000,
+    "heatGain": 10,
+    "notorietyGain": 8,
+    "risk": 0.18
+  },
+  {
+    "id": "silent_partner",
+    "codename": "Silent Partner",
+    "minAge": 20,
+    "minNotoriety": 10,
+    "payout": 32000,
+    "heatGain": 14,
+    "notorietyGain": 12,
+    "risk": 0.24
+  },
+  {
+    "id": "clean_exit",
+    "codename": "Clean Exit",
+    "minAge": 24,
+    "minNotoriety": 22,
+    "payout": 54000,
+    "heatGain": 18,
+    "notorietyGain": 16,
+    "risk": 0.31
+  },
+  {
+    "id": "state_line",
+    "codename": "State Line",
+    "minAge": 27,
+    "minNotoriety": 35,
+    "payout": 86000,
+    "heatGain": 24,
+    "notorietyGain": 20,
+    "risk": 0.39
+  },
+  {
+    "id": "ghost_protocol",
+    "codename": "Ghost Protocol",
+    "minAge": 30,
+    "minNotoriety": 50,
+    "payout": 130000,
+    "heatGain": 30,
+    "notorietyGain": 25,
+    "risk": 0.48
+  }
+]
