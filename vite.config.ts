@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-  base: '/DigiLife/', // Change this to your actual repository name or use environment variables
+  base: '/DigiLife/', // Repository name for GitHub Pages
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
