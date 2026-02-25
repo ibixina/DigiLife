@@ -8,7 +8,7 @@
  |____/|_|___/    |_____|_|_|      
 ```
 
-DigiLife is a web-based life simulation game inspired by BitLife with card-style yearly decisions and a brutalist retro interface.
+DigiLife is a web-based life simulation game inspired.
 
 ## Current Status
 
