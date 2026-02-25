@@ -78,6 +78,9 @@ export class Engine {
             if (this.state.serialKiller.lastKillYear === undefined) this.state.serialKiller.lastKillYear = null;
             if (this.state.serialKiller.lastContractYear === undefined) this.state.serialKiller.lastContractYear = null;
         }
+        if (this.state.wrestlingContract === undefined) {
+            this.state.wrestlingContract = null;
+        }
     }
 
     startNewLife(firstName: string, lastName: string, gender: 'Male' | 'Female' | 'Non-binary', country: string) {
@@ -123,6 +126,11 @@ export class Engine {
 
     ageUp() {
         if (!this.state.isAlive) return;
+        if (this.state.currentLocation !== 'Home') {
+            this.logHistory(this.state.age, 'You must return home before aging up.', 'secondary');
+            events.emit('stat_changed', null);
+            return;
+        }
 
         this.state.age += 1;
         this.state.year += 1;

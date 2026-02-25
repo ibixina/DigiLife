@@ -38,6 +38,10 @@ body {
     overflow-x: hidden;
 }
 
+body.modal-open {
+    overflow: hidden;
+}
+
 /* Scrollbar styling for webkit */
 ::-webkit-scrollbar {
     width: 8px;

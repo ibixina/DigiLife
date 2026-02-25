@@ -1,7 +1,7 @@
 import { engine } from '../core/Engine';
 import { events } from '../core/EventBus';
 import { performActivity, getAvailableActivities } from '../systems/ActivitySystem';
-import { interactWithNPC, getAvailableInteractions } from '../systems/RelationshipSystem';
+import { interactWithNPC, getAvailableInteractions, getVisibleRelationships } from '../systems/RelationshipSystem';
 import { getAvailableEducationActions, performEducationAction } from '../systems/EducationSystem';
 import { getAvailableCareerActions, performCareerAction } from '../systems/CareerSystem';
 
@@ -12,9 +12,10 @@ export class Renderer {
   private hasNewActivities: boolean = false;
   private hasNewInteractions: boolean = false;
   private hasNewCareerActions: boolean = false;
-  private lastActivitiesCount: number = 0;
-  private lastInteractionsCount: number = 0;
-  private lastCareerActionsCount: number = 0;
+  private seenActivityKeys: Set<string> = new Set();
+  private seenInteractionKeys: Set<string> = new Set();
+  private seenCareerKeys: Set<string> = new Set();
+  private activeOverlay: HTMLElement | null = null;
 
   constructor(elementId: string) {
     this.el = document.getElementById(elementId)!;
@@ -32,26 +33,52 @@ export class Renderer {
     });
   }
 
+  private getActivityKeys(): string[] {
+    return getAvailableActivities(engine.state).map(a => a.id);
+  }
+
+  private getInteractionKeys(): string[] {
+    const keys = new Set<string>();
+    for (const npc of getVisibleRelationships(engine.state)) {
+      for (const action of getAvailableInteractions(engine.state, npc.id)) {
+        keys.add(action.id);
+      }
+    }
+    return Array.from(keys);
+  }
+
+  private getCareerKeys(): string[] {
+    return [...getAvailableEducationActions(engine.state), ...getAvailableCareerActions(engine.state)].map(a => a.id);
+  }
+
   checkNewActions() {
-    const actCount = getAvailableActivities(engine.state).length;
-    if (actCount > this.lastActivitiesCount) this.hasNewActivities = true;
-    this.lastActivitiesCount = actCount;
+    this.hasNewActivities = this.getActivityKeys().some(key => !this.seenActivityKeys.has(key));
+    this.hasNewInteractions = this.getInteractionKeys().some(key => !this.seenInteractionKeys.has(key));
+    this.hasNewCareerActions = this.getCareerKeys().some(key => !this.seenCareerKeys.has(key));
+  }
 
-    let intCount = 0;
-    engine.state.relationships.forEach(npc => {
-      intCount += getAvailableInteractions(engine.state, npc.id).length;
-    });
-    if (intCount > this.lastInteractionsCount) this.hasNewInteractions = true;
-    this.lastInteractionsCount = intCount;
+  private openOverlay(modal: HTMLElement): void {
+    this.closeOverlay();
+    const overlay = document.createElement('div');
+    overlay.className = 'menu-overlay';
+    overlay.onclick = (event) => {
+      if (event.target === overlay) this.closeOverlay();
+    };
+    overlay.appendChild(modal);
+    this.activeOverlay = overlay;
+    this.el.appendChild(overlay);
+    document.body.classList.add('modal-open');
+  }
 
-    const careerActions = getAvailableCareerActions(engine.state).length;
-    const educationActions = getAvailableEducationActions(engine.state).length;
-    const careerCount = careerActions + educationActions;
-    if (careerCount > this.lastCareerActionsCount) this.hasNewCareerActions = true;
-    this.lastCareerActionsCount = careerCount;
+  private closeOverlay(): void {
+    if (!this.activeOverlay) return;
+    this.activeOverlay.remove();
+    this.activeOverlay = null;
+    document.body.classList.remove('modal-open');
   }
 
   render() {
+    this.closeOverlay();
     this.el.innerHTML = '';
 
     if (this.currentScreen === 'TITLE') {
@@ -156,6 +183,7 @@ export class Renderer {
   }
 
   renderGameScreen() {
+    this.checkNewActions();
     const header = document.createElement('header');
     header.className = 'top-bar';
 
@@ -222,6 +250,16 @@ export class Renderer {
       statsContainer.appendChild(row);
     });
 
+    if (engine.state.career.field === 'Wrestling') {
+      const popularityValue = Math.max(0, Math.min(100, Math.round(engine.state.flags.wrestling_fan_base || 0)));
+      const row = document.createElement('div');
+      row.className = 'stat-row';
+      row.innerHTML = '<div class="stat-label">pop</div>' +
+        '<div class="stat-bar-outer"><div class="stat-bar-inner" data-stat="popularity" style="width: ' + popularityValue + '%"></div></div>' +
+        '<div class="stat-value">' + popularityValue + '%</div>';
+      statsContainer.appendChild(row);
+    }
+
     const logContainer = document.createElement('div');
     logContainer.className = 'event-log';
 
@@ -244,8 +282,6 @@ export class Renderer {
     activitiesBtn.className = 'tab-btn' + (this.hasNewActivities ? ' has-new' : '');
     activitiesBtn.innerHTML = '<span class="tab-icon">⚡</span><span>Activities</span>' + (this.hasNewActivities ? '<span class="new-dot"></span>' : '');
     activitiesBtn.onclick = () => {
-      this.hasNewActivities = false;
-      activitiesBtn.innerHTML = '<span class="tab-icon">⚡</span><span>Activities</span>';
       this.renderActivitiesMenu();
     };
 
@@ -253,8 +289,6 @@ export class Renderer {
     relsBtn.className = 'tab-btn' + (this.hasNewInteractions ? ' has-new' : '');
     relsBtn.innerHTML = '<span class="tab-icon">👥</span><span>Relations</span>' + (this.hasNewInteractions ? '<span class="new-dot"></span>' : '');
     relsBtn.onclick = () => {
-      this.hasNewInteractions = false;
-      relsBtn.innerHTML = '<span class="tab-icon">👥</span><span>Relations</span>';
       this.renderRelationshipsMenu();
     };
 
@@ -262,8 +296,6 @@ export class Renderer {
     careerBtn.className = 'tab-btn' + (this.hasNewCareerActions ? ' has-new' : '');
     careerBtn.innerHTML = '<span class="tab-icon">💼</span><span>Career</span>' + (this.hasNewCareerActions ? '<span class="new-dot"></span>' : '');
     careerBtn.onclick = () => {
-      this.hasNewCareerActions = false;
-      careerBtn.innerHTML = '<span class="tab-icon">💼</span><span>Career</span>';
       this.renderCareerMenu();
     };
 
@@ -273,6 +305,11 @@ export class Renderer {
     ageUpBtn.style.color = 'var(--bg-color)';
     ageUpBtn.style.fontWeight = 'bold';
     ageUpBtn.innerHTML = '<span class="tab-icon">⏳</span><span>AGE +1</span>';
+    const canAgeUp = engine.state.currentLocation === 'Home';
+    if (!canAgeUp) {
+      ageUpBtn.disabled = true;
+      ageUpBtn.title = 'Return home before aging up';
+    }
     ageUpBtn.onclick = () => engine.ageUp();
 
     nav.appendChild(activitiesBtn);
@@ -337,18 +374,18 @@ export class Renderer {
   }
 
   renderActivitiesMenu() {
-    const main = this.el.querySelector('.content-area') as HTMLElement;
-    if (!main) return;
-
-    const existingModal = main.querySelector('.menu-modal');
-    if (existingModal) existingModal.remove();
-
     const modal = document.createElement('div');
     modal.className = 'event-card menu-modal';
 
     const title = document.createElement('div');
     title.className = 'event-title';
     title.innerText = `Activities (at ${engine.state.currentLocation})`;
+
+    const status = document.createElement('div');
+    status.className = 'menu-status';
+    status.innerText = engine.state.currentLocation === 'Home'
+      ? `${engine.state.timeBudget} months left this year`
+      : `${engine.state.locationTime} time left at ${engine.state.currentLocation}`;
 
     const choicesContainer = document.createElement('div');
     choicesContainer.className = 'choices-container';
@@ -362,16 +399,18 @@ export class Renderer {
     }
 
     modal.appendChild(title);
-    // (Time left now displayed in the global top bar)
+    modal.appendChild(status);
 
     actions.forEach(act => {
       const btn = document.createElement('button');
       btn.className = 'choice-card';
+      if (!this.seenActivityKeys.has(act.id)) btn.classList.add('is-new');
       const costLabel = engine.state.currentLocation === 'Home' && !act.isTravel ? 'Months' : 'Time';
       btn.innerText = `${act.name} (-${act.timeCost} ${costLabel})`;
       btn.onclick = () => {
         performActivity(engine.state, act.id);
-        modal.remove();
+        this.seenActivityKeys.add(act.id);
+        this.closeOverlay();
         this.render();
         // Re-open list if they still have budget
         if (engine.state.timeBudget > 0 || engine.state.locationTime > 0) this.renderActivitiesMenu();
@@ -382,21 +421,17 @@ export class Renderer {
     const closeBtn = document.createElement('button');
     closeBtn.className = 'choice-card text-muted';
     closeBtn.innerText = 'Close';
-    closeBtn.onclick = () => modal.remove();
+    closeBtn.onclick = () => {
+      this.closeOverlay();
+      this.render();
+    };
     choicesContainer.appendChild(closeBtn);
 
     modal.appendChild(choicesContainer);
-    main.appendChild(modal);
-    main.scrollTop = main.scrollHeight;
+    this.openOverlay(modal);
   }
 
   renderRelationshipsMenu() {
-    const main = this.el.querySelector('.content-area') as HTMLElement;
-    if (!main) return;
-
-    const existingModal = main.querySelector('.menu-modal');
-    if (existingModal) existingModal.remove();
-
     const modal = document.createElement('div');
     modal.className = 'event-card menu-modal';
 
@@ -407,17 +442,20 @@ export class Renderer {
     const choicesContainer = document.createElement('div');
     choicesContainer.className = 'choices-container';
 
-    const rels = engine.state.relationships.filter(r => r.isAlive && ((r.familiarity || 0) > 0 || r.relationshipToPlayer > 0));
+    const rels = getVisibleRelationships(engine.state);
 
     if (rels.length === 0) {
       const p = document.createElement('p');
-      p.innerText = 'You do not know anyone yet.';
+      p.innerText = 'No relevant people are available in this location right now.';
       choicesContainer.appendChild(p);
     }
 
     rels.forEach(npc => {
       const btn = document.createElement('button');
       btn.className = 'choice-card';
+      const npcActionIds = getAvailableInteractions(engine.state, npc.id).map(action => action.id);
+      const hasUnseen = npcActionIds.some(actionId => !this.seenInteractionKeys.has(actionId));
+      if (hasUnseen) btn.classList.add('is-new');
       btn.innerText = `${npc.name} (${npc.type}) @ ${npc.location} - Rel: ${npc.relationshipToPlayer}% | Fam: ${npc.familiarity || 0}%`;
       btn.onclick = () => this.renderNPCMenu(npc.id, modal);
       choicesContainer.appendChild(btn);
@@ -426,46 +464,52 @@ export class Renderer {
     const closeBtn = document.createElement('button');
     closeBtn.className = 'choice-card text-muted';
     closeBtn.innerText = 'Close';
-    closeBtn.onclick = () => modal.remove();
+    closeBtn.onclick = () => {
+      this.closeOverlay();
+      this.render();
+    };
     choicesContainer.appendChild(closeBtn);
 
     modal.appendChild(title);
     modal.appendChild(choicesContainer);
-    main.appendChild(modal);
-    main.scrollTop = main.scrollHeight;
+    this.openOverlay(modal);
   }
 
   renderCareerMenu() {
-    const main = this.el.querySelector('.content-area') as HTMLElement;
-    if (!main) return;
-
-    const existingModal = main.querySelector('.menu-modal');
-    if (existingModal) existingModal.remove();
-
     const modal = document.createElement('div');
     modal.className = 'event-card menu-modal';
 
     const title = document.createElement('div');
     title.className = 'event-title';
-    title.innerText = 'Education & Career';
+    title.innerText = 'Career';
 
     const status = document.createElement('div');
-    status.className = 'event-desc';
-    const educationText = engine.state.education.inProgram
-      ? `${engine.state.education.programName} (Year ${engine.state.education.programYearsCompleted + 1})`
-      : engine.state.education.level;
+    status.className = 'menu-status';
     const careerText = engine.state.career.title
       ? `${engine.state.career.title} ($${engine.state.finances.salary.toLocaleString()}/yr, Perf ${engine.state.career.performance}%)`
       : 'Unemployed';
     const barText = engine.state.flags.license_bar ? 'Licensed' : 'Not Licensed';
     const shadow = engine.state.serialKiller;
-    const shadowText = shadow.unlocked
-      ? `${shadow.mode} | Alias: ${shadow.alias || 'Unknown'} | Heat ${shadow.heat}% | Notoriety ${shadow.notoriety}% | Kills ${shadow.kills}`
-      : 'Dormant';
-    const wrestlingText = engine.state.career.field === 'Wrestling'
-      ? `\nWrestling: ${String(engine.state.flags.wrestling_alignment || 'face').toUpperCase()} | Momentum ${Math.round(engine.state.flags.wrestling_momentum || 0)} | Push ${Math.round(engine.state.flags.wrestling_push || 0)} | Fanbase ${Math.round(engine.state.flags.wrestling_fan_base || 0)} | Promo ${Math.round(engine.state.flags.wrestling_promo_skill || 0)} | Injury Years ${Math.max(0, Math.floor(engine.state.flags.wrestling_injury_years || 0))}`
-      : '';
-    status.innerText = `Education: ${educationText} | GPA ${engine.state.education.gpa.toFixed(2)} | Bar: ${barText}\nCareer: ${careerText} | Law Exp: ${engine.state.career.lawYearsExperience}y | Licensed Exp: ${engine.state.career.licensedLawYearsExperience}y${wrestlingText}\nShadow Career: ${shadowText}`;
+    const chunks: string[] = [];
+    chunks.push(`Career: ${careerText}`);
+    chunks.push(`Law Track: ${barText} | Law Exp ${engine.state.career.lawYearsExperience}y | Licensed ${engine.state.career.licensedLawYearsExperience}y`);
+    if (engine.state.education.inProgram) {
+      chunks.push(`Education: ${engine.state.education.programName} (Year ${engine.state.education.programYearsCompleted + 1}, GPA ${engine.state.education.gpa.toFixed(2)})`);
+    }
+    if (engine.state.career.field === 'Wrestling') {
+      const contract = engine.state.wrestlingContract;
+      chunks.push(`Wrestling: ${String(engine.state.flags.wrestling_alignment || 'face').toUpperCase()} | Momentum ${Math.round(engine.state.flags.wrestling_momentum || 0)} | Push ${Math.round(engine.state.flags.wrestling_push || 0)} | Popularity ${Math.round(engine.state.flags.wrestling_fan_base || 0)} | Promo ${Math.round(engine.state.flags.wrestling_promo_skill || 0)}`);
+      if (contract) {
+        chunks.push(`Contract: ${contract.promotionName} | $${contract.annualSalary.toLocaleString()}/yr | Through ${contract.endYear}`);
+      }
+      if (contract?.rivalOffer) {
+        chunks.push(`Rival Offer: ${contract.rivalOffer.promotionName} | $${contract.rivalOffer.annualSalary.toLocaleString()}/yr (${contract.rivalOffer.termYears}y)`);
+      }
+    }
+    if (shadow.unlocked) {
+      chunks.push(`Shadow Career: ${shadow.mode} | Alias ${shadow.alias || 'Unknown'} | Heat ${shadow.heat}% | Notoriety ${shadow.notoriety}% | Kills ${shadow.kills}`);
+    }
+    status.innerText = chunks.join('\n');
 
     const choicesContainer = document.createElement('div');
     choicesContainer.className = 'choices-container';
@@ -483,10 +527,12 @@ export class Renderer {
     educationActions.forEach(action => {
       const btn = document.createElement('button');
       btn.className = 'choice-card';
+      if (!this.seenCareerKeys.has(action.id)) btn.classList.add('is-new');
       btn.innerText = `📘 ${action.name} (-${action.timeCost} Time)`;
       btn.onclick = () => {
         performEducationAction(engine.state, action.id);
-        modal.remove();
+        this.seenCareerKeys.add(action.id);
+        this.closeOverlay();
         this.render();
         this.renderCareerMenu();
       };
@@ -496,10 +542,12 @@ export class Renderer {
     careerActions.forEach(action => {
       const btn = document.createElement('button');
       btn.className = 'choice-card';
+      if (!this.seenCareerKeys.has(action.id)) btn.classList.add('is-new');
       btn.innerText = `💼 ${action.name} (-${action.timeCost} Time)`;
       btn.onclick = () => {
         performCareerAction(engine.state, action.id);
-        modal.remove();
+        this.seenCareerKeys.add(action.id);
+        this.closeOverlay();
         this.render();
         this.renderCareerMenu();
       };
@@ -509,23 +557,20 @@ export class Renderer {
     const closeBtn = document.createElement('button');
     closeBtn.className = 'choice-card text-muted';
     closeBtn.innerText = 'Close';
-    closeBtn.onclick = () => modal.remove();
+    closeBtn.onclick = () => {
+      this.closeOverlay();
+      this.render();
+    };
     choicesContainer.appendChild(closeBtn);
 
     modal.appendChild(title);
     modal.appendChild(status);
     modal.appendChild(choicesContainer);
-    main.appendChild(modal);
-    main.scrollTop = main.scrollHeight;
+    this.openOverlay(modal);
   }
 
   renderNPCMenu(npcId: string, parentModal: HTMLElement) {
-    const main = this.el.querySelector('.content-area') as HTMLElement;
-    if (!main) return;
     parentModal.remove();
-
-    const existingModal = main.querySelector('.menu-modal');
-    if (existingModal) existingModal.remove();
 
     const npc = engine.state.relationships.find(r => r.id === npcId);
     if (!npc) return;
@@ -536,6 +581,10 @@ export class Renderer {
     const title = document.createElement('div');
     title.className = 'event-title';
     title.innerText = npc.name;
+
+    const status = document.createElement('div');
+    status.className = 'menu-status';
+    status.innerText = `${npc.type} | Rel ${npc.relationshipToPlayer}% | Fam ${npc.familiarity || 0}% | ${npc.location}`;
 
     // (Time left now displayed in the global top bar)
 
@@ -550,14 +599,20 @@ export class Renderer {
       choicesContainer.appendChild(p);
     }
 
+    const newlySeenInThisMenu = new Set<string>();
     actions.forEach(intDef => {
       const btn = document.createElement('button');
       btn.className = 'choice-card';
+      if (!this.seenInteractionKeys.has(intDef.id)) {
+        btn.classList.add('is-new');
+        newlySeenInThisMenu.add(intDef.id);
+      }
       const costLabel = engine.state.currentLocation === 'Home' ? 'Months' : 'Time';
       btn.innerText = `${intDef.name} (-${intDef.timeCost} ${costLabel})`;
       btn.onclick = () => {
         interactWithNPC(engine.state, npcId, intDef.id);
-        modal.remove();
+        this.seenInteractionKeys.add(intDef.id);
+        this.closeOverlay();
         this.render();
         // Re-open list if they still have budget
         if (engine.state.timeBudget > 0 || engine.state.locationTime > 0) this.renderNPCMenu(npcId, modal);
@@ -565,19 +620,23 @@ export class Renderer {
       choicesContainer.appendChild(btn);
     });
 
+    newlySeenInThisMenu.forEach(actionId => this.seenInteractionKeys.add(actionId));
+    this.checkNewActions();
+
     const backBtn = document.createElement('button');
     backBtn.className = 'choice-card text-muted';
     backBtn.innerText = 'Back';
     backBtn.onclick = () => {
-      modal.remove();
+      this.closeOverlay();
+      this.render();
       this.renderRelationshipsMenu();
     }
     choicesContainer.appendChild(backBtn);
 
     modal.appendChild(title);
+    modal.appendChild(status);
     modal.appendChild(choicesContainer);
-    main.appendChild(modal);
-    main.scrollTop = main.scrollHeight;
+    this.openOverlay(modal);
   }
 
   renderDeathScreen() {

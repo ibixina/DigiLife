@@ -63,6 +63,10 @@
     background-color: var(--karma-color);
 }
 
+.stat-bar-inner[data-stat="popularity"] {
+    background-color: var(--gold-color);
+}
+
 .stat-value {
     width: 4ch;
     text-align: right;
@@ -121,6 +125,10 @@
     opacity: 0;
 }
 
+.choice-card.is-new {
+    border-color: var(--accent-color);
+}
+
 .choice-card:hover::before {
     opacity: 1;
 }
@@ -133,6 +141,45 @@
     margin-bottom: 2rem;
     box-shadow: 4px 4px 0 var(--border-color);
     /* Brutalist hard shadow */
+}
+
+.menu-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.72);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0.75rem 0.75rem 5.5rem;
+    z-index: 30;
+}
+
+.menu-modal {
+    width: 100%;
+    max-height: calc(100vh - 100px);
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.menu-modal .event-title {
+    position: sticky;
+    top: 0;
+    background: var(--bg-color);
+    z-index: 2;
+}
+
+.menu-status {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+}
+
+.menu-modal .choices-container {
+    margin-top: 0;
+    padding-bottom: 0;
+    overflow-y: auto;
 }
 
 .event-icon {
@@ -259,6 +306,11 @@ select option {
     background-color: var(--accent-color);
     border-radius: 50%;
     animation: pulse 1s infinite alternate;
+}
+
+.tab-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 @keyframes pulse {

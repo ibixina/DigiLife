@@ -14,6 +14,8 @@ export interface Relationship {
   relationshipToPlayer: number; // 0-100
   familiarity: number; // 0-100, decays over time, increases with interaction
   location: string;
+  workplace?: string | null;
+  promotionId?: string | null;
   isAlive: boolean;
   traits: string[];
 }
@@ -94,6 +96,35 @@ export interface SerialKillerState {
   lastContractYear: number | null;
 }
 
+export interface WrestlingContractClauses {
+  downsideGuarantee: number;
+  merchCutPercent: number;
+  appearanceMinimum: number;
+  nonCompeteMonths: number;
+  creativeControl: boolean;
+  injuryProtection: boolean;
+  travelCovered: boolean;
+  exclusivity: 'exclusive' | 'semi-exclusive' | 'open';
+}
+
+export interface WrestlingContractOffer {
+  promotionId: string;
+  promotionName: string;
+  annualSalary: number;
+  termYears: number;
+  clauses: WrestlingContractClauses;
+}
+
+export interface WrestlingContractState {
+  promotionId: string;
+  promotionName: string;
+  startYear: number;
+  endYear: number;
+  annualSalary: number;
+  clauses: WrestlingContractClauses;
+  rivalOffer: WrestlingContractOffer | null;
+}
+
 export interface GameState {
   version: string;
   character: Character;
@@ -108,6 +139,7 @@ export interface GameState {
   education: EducationState;
   career: CareerState;
   serialKiller: SerialKillerState;
+  wrestlingContract: WrestlingContractState | null;
   relationships: Relationship[];
   timeBudget: number;
   locationTime: number;
@@ -181,6 +213,7 @@ export function createInitialState(): GameState {
       lastKillYear: null,
       lastContractYear: null,
     },
+    wrestlingContract: null,
     relationships: [],
     timeBudget: 12,
     locationTime: 10,

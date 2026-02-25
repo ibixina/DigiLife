@@ -524,3 +524,57 @@ test('Arena travel shows up only for wrestling careers', () => {
   state.career.field = 'Wrestling';
   includes(getAvailableActivities(state).map(a => a.id), 'Go to Arena', 'Arena travel should appear with wrestling career');
 });
+
+test('Go Home travel is free and available when away', () => {
+  const state = makeAdultState();
+  state.currentLocation = 'School';
+  state.locationTime = 0;
+
+  const actions = getAvailableActivities(state);
+  includes(actions.map(a => a.id), 'Go Home', 'Go Home should be available even at zero location time');
+  const goHome = actions.find(a => a.id === 'Go Home');
+  equal(goHome?.timeCost ?? -1, 0, 'Go Home should consume zero time');
+});
+
+test('Go to School is hidden when not in school flow', () => {
+  const state = makeAdultState();
+  state.age = 30;
+  state.education.inProgram = false;
+
+  notIncludes(getAvailableActivities(state).map(a => a.id), 'Go to School', 'Adult not enrolled should not see school travel');
+
+  state.education.inProgram = true;
+  includes(getAvailableActivities(state).map(a => a.id), 'Go to School', 'Enrolled higher-education student should see school travel');
+});
+
+test('Career actions are filtered out when no time remains', () => {
+  const careers: CareerDefinition[] = [
+    {
+      id: 'time_filter_job',
+      title: 'Time Filter Job',
+      field: 'Business',
+      specialization: 'Ops',
+      requiredEducation: 'High School',
+      minAge: 18,
+      minSmarts: 10,
+      minWillpower: 10,
+      startSalary: 40000,
+      annualRaise: 0.01,
+      difficulty: 0.1
+    }
+  ];
+  registerCareers(careers);
+
+  const state = makeAdultState();
+  state.education.level = 'High School';
+  withMockedRandom([0.0], () => {
+    performCareerAction(state, 'apply_time_filter_job');
+  });
+  assert(!!state.career.id, 'Should be employed for work action checks');
+
+  state.timeBudget = 2;
+  notIncludes(careerActionIds(state), 'work_hard', 'Work Hard should be hidden without enough time');
+
+  state.timeBudget = 3;
+  includes(careerActionIds(state), 'work_hard', 'Work Hard should appear when enough time exists');
+});

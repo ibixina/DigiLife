@@ -1,5 +1,5 @@
 import { createInitialState } from '../src/core/GameState';
-import { getAvailableInteractions, interactWithNPC } from '../src/systems/RelationshipSystem';
+import { getAvailableInteractions, getVisibleRelationships, interactWithNPC } from '../src/systems/RelationshipSystem';
 import { test, assert, includes, notIncludes, equal, withMockedRandom } from './harness';
 
 function makeState() {
@@ -118,4 +118,107 @@ test('Hire Hitman consumes money and can increase heat on failure', () => {
 
   equal(state.finances.cash, 5000, 'Hitman fee should be deducted');
   assert(state.serialKiller.heat >= 18, 'Failed hire should increase heat');
+});
+
+test('Relationships at home include high-bond remote contacts', () => {
+  const state = makeState();
+  state.currentLocation = 'Home';
+  state.relationships.push({
+    id: 'remote_high',
+    name: 'Remote High',
+    type: 'Friend',
+    gender: 'Non-binary',
+    age: 26,
+    health: 80,
+    happiness: 70,
+    smarts: 70,
+    looks: 60,
+    relationshipToPlayer: 81,
+    familiarity: 60,
+    location: 'Arena',
+    isAlive: true,
+    traits: []
+  });
+  state.relationships.push({
+    id: 'remote_low',
+    name: 'Remote Low',
+    type: 'Friend',
+    gender: 'Non-binary',
+    age: 26,
+    health: 80,
+    happiness: 70,
+    smarts: 70,
+    looks: 60,
+    relationshipToPlayer: 80,
+    familiarity: 60,
+    location: 'Arena',
+    isAlive: true,
+    traits: []
+  });
+
+  const visibleIds = getVisibleRelationships(state).map(npc => npc.id);
+  includes(visibleIds, 'remote_high', 'Home should include contacts above 80 relationship');
+  notIncludes(visibleIds, 'remote_low', 'Home should not include contacts at 80 or lower relationship');
+});
+
+test('Wrestling arena view is filtered by current promotion', () => {
+  const state = makeState();
+  state.currentLocation = 'Arena';
+  state.career.field = 'Wrestling';
+  state.wrestlingContract = {
+    promotionId: 'aew',
+    promotionName: 'AEW',
+    startYear: state.year,
+    endYear: state.year + 5,
+    annualSalary: 120000,
+    clauses: {
+      downsideGuarantee: 80000,
+      merchCutPercent: 8,
+      appearanceMinimum: 20,
+      nonCompeteMonths: 3,
+      creativeControl: false,
+      injuryProtection: true,
+      travelCovered: true,
+      exclusivity: 'exclusive'
+    },
+    rivalOffer: null
+  };
+  state.relationships.push({
+    id: 'aew_contact',
+    name: 'AEW Contact',
+    type: 'Co-worker',
+    gender: 'Male',
+    age: 29,
+    health: 80,
+    happiness: 70,
+    smarts: 60,
+    looks: 60,
+    relationshipToPlayer: 55,
+    familiarity: 60,
+    location: 'Arena',
+    promotionId: 'aew',
+    isAlive: true,
+    traits: ['Wrestling']
+  });
+  state.relationships.push({
+    id: 'wwe_contact',
+    name: 'WWE Contact',
+    type: 'Co-worker',
+    gender: 'Male',
+    age: 29,
+    health: 80,
+    happiness: 70,
+    smarts: 60,
+    looks: 60,
+    relationshipToPlayer: 55,
+    familiarity: 60,
+    location: 'Arena',
+    promotionId: 'wwe',
+    isAlive: true,
+    traits: ['Wrestling']
+  });
+
+  const visibleIds = getVisibleRelationships(state).map(npc => npc.id);
+  includes(visibleIds, 'aew_contact', 'Current promotion contacts should be visible');
+  notIncludes(visibleIds, 'wwe_contact', 'Other promotion contacts should be hidden at arena');
 });

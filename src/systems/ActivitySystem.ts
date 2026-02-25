@@ -26,13 +26,14 @@ export function calculateNaturalPotential(currentStat: number): number {
 export const ACTIVITIES: Record<string, ActivityDef> = {
     // TRAVEL ACTIONS
     'Go Home': {
-        id: 'Go Home', name: 'Go Home', minAge: 0, cost: 0, timeCost: 1, isTravel: true, travelTo: 'Home', locationTimeGranted: 10,
+        id: 'Go Home', name: 'Go Home', minAge: 0, cost: 0, timeCost: 0, isTravel: true, travelTo: 'Home', locationTimeGranted: 10,
         perform: (state) => {
             state.history.push({ age: state.age, year: state.year, text: 'You went back home.', type: 'secondary' });
         }
     },
     'Go to School': {
         id: 'Go to School', name: 'Go to School', minAge: 5, cost: 0, timeCost: 2, isTravel: true, travelTo: 'School', locationTimeGranted: 8,
+        isAvailable: (state) => (state.age >= 5 && state.age <= 17) || state.education.inProgram,
         perform: (state) => {
             state.history.push({ age: state.age, year: state.year, text: 'You went to school.', type: 'secondary' });
             // Generate some classmates and teachers if you don't have enough
@@ -45,7 +46,12 @@ export const ACTIVITIES: Record<string, ActivityDef> = {
                     gender: 'Non-binary',
                     age: Math.floor(state.age + 20),
                     health: 80, happiness: 50, smarts: 80, looks: 50,
-                    relationshipToPlayer: 50, familiarity: 10, location: 'School', isAlive: true, traits: []
+                    relationshipToPlayer: 50,
+                    familiarity: 10,
+                    location: 'School',
+                    workplace: 'School',
+                    isAlive: true,
+                    traits: []
                 });
                 state.relationships.push({
                     id: 'classmate_' + Date.now() + Math.random(),
@@ -54,7 +60,7 @@ export const ACTIVITIES: Record<string, ActivityDef> = {
                     gender: 'Non-binary',
                     age: state.age,
                     health: 80, happiness: 50, smarts: 80, looks: 50,
-                    relationshipToPlayer: 50, familiarity: 10, location: 'School', isAlive: true, traits: []
+                    relationshipToPlayer: 50, familiarity: 10, location: 'School', isAlive: true, traits: [], workplace: 'School'
                 });
             }
         }
@@ -78,6 +84,7 @@ export const ACTIVITIES: Record<string, ActivityDef> = {
             state.history.push({ age: state.age, year: state.year, text: 'You headed to the arena for wrestling duties.', type: 'secondary' });
             const arenaPeople = state.relationships.filter(r => r.isAlive && r.location === 'Arena');
             if (arenaPeople.length < 4) {
+                const promotionId = state.wrestlingContract?.promotionId || 'indie';
                 const names = ['Rina Voss', 'Mason Steel', 'Kaito Ren', 'Jules Mercer', 'Ty Knox'];
                 for (let i = arenaPeople.length; i < 4; i++) {
                     const name = names[Math.floor(Math.random() * names.length)];
@@ -94,6 +101,8 @@ export const ACTIVITIES: Record<string, ActivityDef> = {
                         relationshipToPlayer: 45,
                         familiarity: 45,
                         location: 'Arena',
+                        workplace: 'Arena',
+                        promotionId,
                         isAlive: true,
                         traits: ['Wrestling']
                     });
@@ -268,7 +277,7 @@ export function getAvailableActivities(state: GameState): ActivityDef[] {
             // Can only travel if at Home, OR if the travel is "Go Home"
             if (act.travelTo === 'Home') {
                 if (state.currentLocation === 'Home') return false; // Already home
-                if (state.timeBudget < act.timeCost) return false;
+                if (state.locationTime < act.timeCost) return false;
             } else {
                 if (state.currentLocation !== 'Home') return false; // Can only travel FROM home
                 if (state.timeBudget < act.timeCost) return false;
@@ -293,8 +302,14 @@ export function performActivity(state: GameState, activityId: string) {
     if (!act) return;
 
     if (act.isTravel) {
-        if (state.timeBudget < act.timeCost) return;
-        state.timeBudget -= act.timeCost;
+        if (act.travelTo === 'Home') {
+            if (state.currentLocation === 'Home') return;
+            if (state.locationTime < act.timeCost) return;
+            state.locationTime -= act.timeCost;
+        } else {
+            if (state.timeBudget < act.timeCost) return;
+            state.timeBudget -= act.timeCost;
+        }
         state.currentLocation = act.travelTo || 'Home';
         state.locationTime = act.locationTimeGranted || 10;
     } else {

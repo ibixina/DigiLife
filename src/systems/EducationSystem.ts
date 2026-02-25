@@ -1,4 +1,5 @@
 import type { GameState } from '../core/GameState';
+import { hasTimeForAction, spendActionTime } from './ActionTimeSystem';
 
 export type EducationLevel = 'None' | 'Primary' | 'Secondary' | 'High School' | 'Bachelor' | 'Master' | 'Doctorate';
 
@@ -79,18 +80,6 @@ function hasLevel(state: GameState, required: EducationLevel): boolean {
   return EDUCATION_RANK[state.education.level] >= EDUCATION_RANK[required];
 }
 
-function spendTime(state: GameState, timeCost: number): boolean {
-  if (state.currentLocation === 'Home') {
-    if (state.timeBudget < timeCost) return false;
-    state.timeBudget -= timeCost;
-    return true;
-  }
-
-  if (state.locationTime < timeCost) return false;
-  state.locationTime -= timeCost;
-  return true;
-}
-
 function payCost(state: GameState, amount: number) {
   if (amount <= 0) return;
   if (state.finances.cash >= amount) {
@@ -131,9 +120,9 @@ export const EDUCATION_ACTIONS: EducationAction[] = [
     name: 'Study Hard',
     timeCost: 2,
     cost: 0,
-    isAvailable: (state) => state.age >= 5,
+    isAvailable: (state) => state.age >= 5 && (state.age <= 17 || state.education.inProgram),
     perform: (state) => {
-      if (!spendTime(state, 2)) return;
+      if (!spendActionTime(state, 2)) return;
       state.education.studyEffort += 1;
       state.stats.smarts = Math.min(100, state.stats.smarts + Math.floor(Math.random() * 5) + 2);
       state.stats.willpower = Math.min(100, state.stats.willpower + 1);
@@ -148,7 +137,7 @@ export const EDUCATION_ACTIONS: EducationAction[] = [
     cost: 0,
     isAvailable: (state) => !state.education.inProgram && state.age >= 18 && hasLevel(state, 'High School') && !hasLevel(state, 'Bachelor'),
     perform: (state) => {
-      if (!spendTime(state, 1)) return;
+      if (!spendActionTime(state, 1)) return;
       enrollInProgram(state, 'engineering_bachelor');
     }
   },
@@ -159,7 +148,7 @@ export const EDUCATION_ACTIONS: EducationAction[] = [
     cost: 0,
     isAvailable: (state) => !state.education.inProgram && state.age >= 22 && hasLevel(state, 'Bachelor') && !hasLevel(state, 'Master'),
     perform: (state) => {
-      if (!spendTime(state, 1)) return;
+      if (!spendActionTime(state, 1)) return;
       enrollInProgram(state, 'engineering_master');
     }
   },
@@ -170,7 +159,7 @@ export const EDUCATION_ACTIONS: EducationAction[] = [
     cost: 0,
     isAvailable: (state) => !state.education.inProgram && state.age >= 18 && hasLevel(state, 'High School') && !hasLevel(state, 'Bachelor'),
     perform: (state) => {
-      if (!spendTime(state, 1)) return;
+      if (!spendActionTime(state, 1)) return;
       enrollInProgram(state, 'prelaw_bachelor');
     }
   },
@@ -181,7 +170,7 @@ export const EDUCATION_ACTIONS: EducationAction[] = [
     cost: 0,
     isAvailable: (state) => !state.education.inProgram && state.age >= 21 && hasLevel(state, 'Bachelor') && !hasLevel(state, 'Doctorate'),
     perform: (state) => {
-      if (!spendTime(state, 1)) return;
+      if (!spendActionTime(state, 1)) return;
       enrollInProgram(state, 'law_jd');
     }
   },
@@ -196,7 +185,7 @@ export const EDUCATION_ACTIONS: EducationAction[] = [
       state.flags.license_bar !== true &&
       state.flags.bar_exam_last_attempt_year !== state.year,
     perform: (state) => {
-      if (!spendTime(state, 2)) return;
+      if (!spendActionTime(state, 2)) return;
 
       if (state.finances.cash >= 2500) {
         state.finances.cash -= 2500;
@@ -222,7 +211,7 @@ export const EDUCATION_ACTIONS: EducationAction[] = [
 ];
 
 export function getAvailableEducationActions(state: GameState): EducationAction[] {
-  return EDUCATION_ACTIONS.filter(action => action.isAvailable(state));
+  return EDUCATION_ACTIONS.filter(action => action.isAvailable(state) && hasTimeForAction(state, action.timeCost));
 }
 
 export function performEducationAction(state: GameState, actionId: string) {

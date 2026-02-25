@@ -58,7 +58,36 @@ function isRomanceCandidate(state: GameState, npc: Relationship): boolean {
 }
 
 function hasKnownRelationship(npc: Relationship): boolean {
-    return npc.familiarity > 0 || npc.relationshipToPlayer > 0;
+  return npc.familiarity > 0 || npc.relationshipToPlayer > 0;
+}
+
+function isSchoolAffiliated(npc: Relationship): boolean {
+  return npc.location === 'School' || npc.workplace === 'School' || npc.type === 'Teacher' || npc.type === 'Classmate';
+}
+
+function isVisibleInCurrentContext(state: GameState, npc: Relationship): boolean {
+  if (state.currentLocation === 'Home') {
+    return npc.location === 'Home' || npc.relationshipToPlayer > 80;
+  }
+
+  if (state.currentLocation === 'School') {
+    return isSchoolAffiliated(npc);
+  }
+
+  if (state.currentLocation === 'Arena' && state.career.field === 'Wrestling') {
+    const currentPromotionId = state.wrestlingContract?.promotionId;
+    if (npc.traits.includes('Wrestling')) {
+      if (!currentPromotionId) return npc.location === 'Arena';
+      return npc.location === 'Arena' && (npc.promotionId || null) === currentPromotionId;
+    }
+    return npc.location === 'Arena';
+  }
+
+  return npc.location === state.currentLocation;
+}
+
+export function getVisibleRelationships(state: GameState): Relationship[] {
+  return state.relationships.filter(npc => npc.isAlive && hasKnownRelationship(npc) && isVisibleInCurrentContext(state, npc));
 }
 
 function canSpendTime(state: GameState, timeCost: number, requiresSameLocation: boolean): boolean {
@@ -299,7 +328,7 @@ export const INTERACTIONS: Record<string, InteractionDef> = {
         timeCost: 2,
         minRelationship: 0,
         requiresSameLocation: false,
-        isAvailable: (_state, npc) => npc.isAlive,
+        isAvailable: (state, npc) => npc.isAlive && state.flags[`plot_${npc.id}`] !== state.year,
         perform: (state, npc) => {
             state.flags[`plot_${npc.id}`] = state.year;
             state.stats.karma = clamp01(state.stats.karma - 8);
@@ -456,6 +485,39 @@ export const INTERACTIONS: Record<string, InteractionDef> = {
             npc.familiarity += Math.floor(Math.random() * 10) + 8;
             state.stats.happiness += Math.floor(Math.random() * 4) + 2;
             state.history.push({ age: state.age, year: state.year, text: `You cared for ${npc.name}.`, type: 'secondary' });
+        }
+    },
+    'Mentor Career': {
+        id: 'Mentor Career',
+        name: 'Mentor Career',
+        minAge: 18,
+        cost: 0,
+        timeCost: 2,
+        minRelationship: 35,
+        allowedTypes: ['Co-worker'],
+        isAvailable: (state, npc) => !!state.career.id && state.career.level >= 2 && npc.location === state.currentLocation,
+        perform: (state, npc) => {
+            npc.smarts += Math.floor(Math.random() * 8) + 4;
+            npc.happiness += Math.floor(Math.random() * 6) + 2;
+            npc.relationshipToPlayer += Math.floor(Math.random() * 7) + 5;
+            state.career.performance = clamp01(state.career.performance + 1);
+            state.history.push({ age: state.age, year: state.year, text: `You mentored ${npc.name} and helped their career growth.`, type: 'secondary' });
+        }
+    },
+    'Undermine Career': {
+        id: 'Undermine Career',
+        name: 'Undermine Career',
+        minAge: 18,
+        cost: 0,
+        timeCost: 2,
+        minRelationship: 0,
+        allowedTypes: ['Co-worker'],
+        isAvailable: (state, npc) => !!state.career.id && state.career.level >= 3 && npc.location === state.currentLocation,
+        perform: (state, npc) => {
+            npc.happiness -= Math.floor(Math.random() * 12) + 6;
+            npc.relationshipToPlayer -= Math.floor(Math.random() * 14) + 7;
+            state.stats.karma = clamp01(state.stats.karma - 6);
+            state.history.push({ age: state.age, year: state.year, text: `You quietly undermined ${npc.name}'s standing at work.`, type: 'primary' });
         }
     }
 };
