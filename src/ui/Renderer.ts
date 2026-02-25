@@ -402,7 +402,7 @@ export class Renderer {
 
     const title = document.createElement('div');
     title.className = 'event-title';
-    title.innerText = 'Relationships';
+    title.innerText = engine.state.career.field === 'Wrestling' ? 'People & Locker Room' : 'Relationships';
 
     const choicesContainer = document.createElement('div');
     choicesContainer.className = 'choices-container';
@@ -462,7 +462,10 @@ export class Renderer {
     const shadowText = shadow.unlocked
       ? `${shadow.mode} | Alias: ${shadow.alias || 'Unknown'} | Heat ${shadow.heat}% | Notoriety ${shadow.notoriety}% | Kills ${shadow.kills}`
       : 'Dormant';
-    status.innerText = `Education: ${educationText} | GPA ${engine.state.education.gpa.toFixed(2)} | Bar: ${barText}\nCareer: ${careerText} | Law Exp: ${engine.state.career.lawYearsExperience}y | Licensed Exp: ${engine.state.career.licensedLawYearsExperience}y\nShadow Career: ${shadowText}`;
+    const wrestlingText = engine.state.career.field === 'Wrestling'
+      ? `\nWrestling: ${String(engine.state.flags.wrestling_alignment || 'face').toUpperCase()} | Momentum ${Math.round(engine.state.flags.wrestling_momentum || 0)} | Push ${Math.round(engine.state.flags.wrestling_push || 0)} | Fanbase ${Math.round(engine.state.flags.wrestling_fan_base || 0)} | Promo ${Math.round(engine.state.flags.wrestling_promo_skill || 0)} | Injury Years ${Math.max(0, Math.floor(engine.state.flags.wrestling_injury_years || 0))}`
+      : '';
+    status.innerText = `Education: ${educationText} | GPA ${engine.state.education.gpa.toFixed(2)} | Bar: ${barText}\nCareer: ${careerText} | Law Exp: ${engine.state.career.lawYearsExperience}y | Licensed Exp: ${engine.state.career.licensedLawYearsExperience}y${wrestlingText}\nShadow Career: ${shadowText}`;
 
     const choicesContainer = document.createElement('div');
     choicesContainer.className = 'choices-container';

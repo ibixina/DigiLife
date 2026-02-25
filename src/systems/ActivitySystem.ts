@@ -71,6 +71,36 @@ export const ACTIVITIES: Record<string, ActivityDef> = {
             state.history.push({ age: state.age, year: state.year, text: 'You traveled to the movie theater.', type: 'secondary' });
         }
     },
+    'Go to Arena': {
+        id: 'Go to Arena', name: 'Go to Arena', minAge: 16, cost: 0, timeCost: 1, isTravel: true, travelTo: 'Arena', locationTimeGranted: 8,
+        isAvailable: (state) => state.career.field === 'Wrestling',
+        perform: (state) => {
+            state.history.push({ age: state.age, year: state.year, text: 'You headed to the arena for wrestling duties.', type: 'secondary' });
+            const arenaPeople = state.relationships.filter(r => r.isAlive && r.location === 'Arena');
+            if (arenaPeople.length < 4) {
+                const names = ['Rina Voss', 'Mason Steel', 'Kaito Ren', 'Jules Mercer', 'Ty Knox'];
+                for (let i = arenaPeople.length; i < 4; i++) {
+                    const name = names[Math.floor(Math.random() * names.length)];
+                    state.relationships.push({
+                        id: `arena_${Date.now()}_${Math.floor(Math.random() * 1000000)}_${i}`,
+                        name,
+                        type: i === 3 ? 'Boss' : 'Co-worker',
+                        gender: Math.random() < 0.5 ? 'Male' : 'Female',
+                        age: Math.max(21, state.age + Math.floor(Math.random() * 10) - 4),
+                        health: 75,
+                        happiness: 60,
+                        smarts: 55,
+                        looks: 55,
+                        relationshipToPlayer: 45,
+                        familiarity: 45,
+                        location: 'Arena',
+                        isAlive: true,
+                        traits: ['Wrestling']
+                    });
+                }
+            }
+        }
+    },
 
     // LOCAL ACTIVITIES
     'Walk': {
@@ -182,6 +212,49 @@ export const ACTIVITIES: Record<string, ActivityDef> = {
             addStat('happiness', 4);
             addStat('karma', 2);
             state.history.push({ age: state.age, year: state.year, text: `You cared for ${pet.name}.`, type: 'secondary' });
+        }
+    },
+    'Ring Drills': {
+        id: 'Ring Drills', name: 'Ring Drills', minAge: 16, cost: 0, timeCost: 2, requiresLocation: 'Arena',
+        isAvailable: (state) => state.career.field === 'Wrestling' && !String(state.career.specialization || '').toLowerCase().includes('backstage'),
+        perform: (state, addStat) => {
+            addStat('athleticism', Math.floor(Math.random() * 7) + 3);
+            addStat('health', 1);
+            state.career.performance = Math.min(100, state.career.performance + Math.floor(Math.random() * 5) + 3);
+            state.flags.wrestling_momentum = Math.max(0, Math.min(100, (state.flags.wrestling_momentum || 30) + 2));
+            state.history.push({ age: state.age, year: state.year, text: 'You sharpened timing, bumps, and footwork in ring drills.', type: 'secondary' });
+        }
+    },
+    'Promo Rehearsal': {
+        id: 'Promo Rehearsal', name: 'Promo Rehearsal', minAge: 16, cost: 0, timeCost: 2, requiresLocation: 'Arena',
+        isAvailable: (state) => state.career.field === 'Wrestling',
+        perform: (state, addStat) => {
+            addStat('smarts', 2);
+            addStat('looks', 1);
+            state.flags.wrestling_promo_skill = Math.max(0, Math.min(100, (state.flags.wrestling_promo_skill || 45) + Math.floor(Math.random() * 7) + 3));
+            state.flags.wrestling_momentum = Math.max(0, Math.min(100, (state.flags.wrestling_momentum || 30) + Math.floor(Math.random() * 4) + 1));
+            state.history.push({ age: state.age, year: state.year, text: 'You rehearsed backstage segments and tightened your delivery.', type: 'secondary' });
+        }
+    },
+    'Meet Fans': {
+        id: 'Meet Fans', name: 'Meet Fans', minAge: 16, cost: 0, timeCost: 2, requiresLocation: 'Arena',
+        isAvailable: (state) => state.career.field === 'Wrestling',
+        perform: (state, addStat) => {
+            const boost = Math.floor(Math.random() * 6) + 4;
+            state.flags.wrestling_fan_base = Math.max(0, Math.min(100, (state.flags.wrestling_fan_base || 30) + boost));
+            state.flags.wrestling_momentum = Math.max(0, Math.min(100, (state.flags.wrestling_momentum || 30) + Math.floor(boost / 2)));
+            addStat('happiness', 2);
+            state.history.push({ age: state.age, year: state.year, text: 'You did a fan meet-and-greet that boosted your popularity.', type: 'secondary' });
+        }
+    },
+    'Production Meeting': {
+        id: 'Production Meeting', name: 'Production Meeting', minAge: 18, cost: 0, timeCost: 2, requiresLocation: 'Arena',
+        isAvailable: (state) => state.career.field === 'Wrestling' && String(state.career.specialization || '').toLowerCase().includes('backstage'),
+        perform: (state, addStat) => {
+            addStat('smarts', 3);
+            state.career.performance = Math.min(100, state.career.performance + Math.floor(Math.random() * 5) + 2);
+            state.flags.wrestling_push = Math.max(0, Math.min(100, (state.flags.wrestling_push || 30) + Math.floor(Math.random() * 4) + 2));
+            state.history.push({ age: state.age, year: state.year, text: 'You ran production notes and coordinated finishes with talent.', type: 'secondary' });
         }
     }
 };

@@ -2,6 +2,7 @@ import { createInitialState } from '../src/core/GameState';
 import type { GameState } from '../src/core/GameState';
 import { processEducationYear, performEducationAction, getAvailableEducationActions } from '../src/systems/EducationSystem';
 import { registerCareers, getAvailableCareerActions, performCareerAction, processCareerYear, processSerialKillerYear, registerSerialContracts } from '../src/systems/CareerSystem';
+import { getAvailableActivities } from '../src/systems/ActivitySystem';
 import type { CareerDefinition, SerialContract } from '../src/systems/CareerSystem';
 import { test, equal, assert, includes, notIncludes, withMockedRandom } from './harness';
 
@@ -344,4 +345,182 @@ test('Annual serial processing can catch player at extreme heat', () => {
   equal(state.serialKiller.mode, 'none', 'Capture should end serial mode');
   equal(state.career.id, null, 'Capture should clear regular career');
   equal(state.finances.salary, 0, 'Capture should remove salary');
+});
+
+test('Wrestling actions expose alignment and momentum mechanics', () => {
+  const careers: CareerDefinition[] = [
+    {
+      id: 'test_wrestler',
+      title: 'Test Wrestler',
+      field: 'Wrestling',
+      specialization: 'Indie Singles',
+      requiredEducation: 'High School',
+      minAge: 18,
+      minSmarts: 20,
+      minWillpower: 20,
+      minAthleticism: 20,
+      minLooks: 20,
+      startSalary: 50000,
+      annualRaise: 0.05,
+      difficulty: 0.1
+    }
+  ];
+  registerCareers(careers);
+
+  const state = makeAdultState();
+  state.education.level = 'High School';
+  state.stats.athleticism = 80;
+  state.stats.looks = 75;
+
+  withMockedRandom([0.0], () => {
+    performCareerAction(state, 'apply_test_wrestler');
+  });
+
+  equal(state.career.field, 'Wrestling', 'Should start wrestling career');
+  includes(careerActionIds(state), 'wrestling_turn_heel', 'Wrestling role should include heel/face actions');
+
+  state.timeBudget = 12;
+  performCareerAction(state, 'wrestling_turn_heel');
+  equal(state.flags.wrestling_alignment, 'heel', 'Turn heel action should set alignment');
+});
+
+test('Retiring from in-ring role unlocks backstage wrestling path', () => {
+  const careers: CareerDefinition[] = [
+    {
+      id: 'test_in_ring',
+      title: 'In-Ring Wrestler',
+      field: 'Wrestling',
+      specialization: 'Televised Promotion',
+      requiredEducation: 'High School',
+      minAge: 18,
+      minSmarts: 20,
+      minWillpower: 20,
+      minAthleticism: 20,
+      minLooks: 20,
+      startSalary: 60000,
+      annualRaise: 0.05,
+      difficulty: 0.1
+    },
+    {
+      id: 'test_backstage_writer',
+      title: 'Backstage Writer',
+      field: 'Wrestling',
+      specialization: 'Backstage Creative',
+      requiredEducation: 'High School',
+      requiredFlagsAll: ['wrestling_retired'],
+      requiredTotalYearsExperience: 5,
+      minAge: 28,
+      minSmarts: 40,
+      minWillpower: 40,
+      startSalary: 90000,
+      annualRaise: 0.06,
+      difficulty: 0.2
+    }
+  ];
+  registerCareers(careers);
+
+  const state = makeAdultState();
+  state.age = 35;
+  state.education.level = 'High School';
+  state.stats.athleticism = 80;
+  state.stats.looks = 70;
+  state.career.totalYearsExperience = 5;
+
+  withMockedRandom([0.0], () => {
+    performCareerAction(state, 'apply_test_in_ring');
+  });
+  assert(!!state.career.id, 'Should start in-ring career');
+
+  state.timeBudget = 12;
+  performCareerAction(state, 'wrestling_retire');
+  equal(state.career.id, null, 'Retirement should clear in-ring role');
+  equal(state.flags.wrestling_retired, true, 'Retirement should set retired flag');
+
+  includes(careerActionIds(state), 'apply_test_backstage_writer', 'Backstage role should unlock after retirement');
+});
+
+test('House show loop can trigger wrestling injury years', () => {
+  const careers: CareerDefinition[] = [
+    {
+      id: 'test_wrestler_injury',
+      title: 'Test Wrestler',
+      field: 'Wrestling',
+      specialization: 'Indie Singles',
+      requiredEducation: 'High School',
+      minAge: 18,
+      minSmarts: 20,
+      minWillpower: 20,
+      minAthleticism: 20,
+      minLooks: 20,
+      startSalary: 50000,
+      annualRaise: 0.05,
+      difficulty: 0.1
+    }
+  ];
+  registerCareers(careers);
+
+  const state = makeAdultState();
+  state.education.level = 'High School';
+  state.stats.athleticism = 80;
+  state.stats.looks = 75;
+  state.stats.health = 40;
+
+  withMockedRandom([0.0], () => {
+    performCareerAction(state, 'apply_test_wrestler_injury');
+  });
+
+  state.timeBudget = 12;
+  withMockedRandom([0.0], () => {
+    performCareerAction(state, 'wrestling_work_house_show');
+  });
+
+  assert((state.flags.wrestling_injury_years || 0) >= 1, 'House show should be able to add injury time');
+});
+
+test('Backstage producer action boosts momentum and pays bonus', () => {
+  const careers: CareerDefinition[] = [
+    {
+      id: 'test_backstage',
+      title: 'Backstage Producer',
+      field: 'Wrestling',
+      specialization: 'Backstage Creative',
+      requiredEducation: 'High School',
+      minAge: 25,
+      minSmarts: 20,
+      minWillpower: 20,
+      startSalary: 80000,
+      annualRaise: 0.04,
+      difficulty: 0.1
+    }
+  ];
+  registerCareers(careers);
+
+  const state = makeAdultState();
+  state.education.level = 'High School';
+  state.flags.wrestling_retired = true;
+
+  withMockedRandom([0.0], () => {
+    performCareerAction(state, 'apply_test_backstage');
+  });
+
+  const beforeMomentum = state.flags.wrestling_momentum || 0;
+  const beforeCash = state.finances.cash;
+  state.timeBudget = 12;
+
+  withMockedRandom([0.1, 0.0], () => {
+    performCareerAction(state, 'wrestling_backstage_produce_match');
+  });
+
+  assert((state.flags.wrestling_momentum || 0) > beforeMomentum, 'Producer action should improve momentum');
+  assert(state.finances.cash > beforeCash, 'Producer action should pay a cash bonus');
+});
+
+test('Arena travel shows up only for wrestling careers', () => {
+  const state = makeAdultState();
+  state.education.level = 'High School';
+
+  notIncludes(getAvailableActivities(state).map(a => a.id), 'Go to Arena', 'Arena travel should be hidden without wrestling career');
+
+  state.career.field = 'Wrestling';
+  includes(getAvailableActivities(state).map(a => a.id), 'Go to Arena', 'Arena travel should appear with wrestling career');
 });

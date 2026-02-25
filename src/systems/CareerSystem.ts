@@ -16,6 +16,9 @@ export interface CareerDefinition {
   promotionTitles?: string[];
   requiredMajors?: string[];
   requiredFlagsAll?: string[];
+  minAthleticism?: number;
+  minLooks?: number;
+  requiredTotalYearsExperience?: number;
   requiredLawYears?: number;
   requiredLicensedLawYears?: number;
 }
@@ -51,6 +54,109 @@ const EDUCATION_RANK: Record<EducationLevel, number> = {
 
 let careerCatalog: CareerDefinition[] = [];
 let serialContracts: SerialContract[] = [];
+
+function getFlagNumber(state: GameState, key: string, fallback = 0): number {
+  const value = state.flags[key];
+  return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+}
+
+function setClampedFlag(state: GameState, key: string, value: number): void {
+  state.flags[key] = clampStat(value);
+}
+
+function getInjuryYears(state: GameState): number {
+  const raw = getFlagNumber(state, 'wrestling_injury_years', 0);
+  return Math.max(0, Math.floor(raw));
+}
+
+function setInjuryYears(state: GameState, years: number): void {
+  state.flags.wrestling_injury_years = Math.max(0, Math.floor(years));
+}
+
+function isWrestlingCareer(state: GameState): boolean {
+  return state.career.field === 'Wrestling';
+}
+
+function getWrestlingStyleRiskMultiplier(state: GameState): number {
+  const specialization = (state.career.specialization || '').toLowerCase();
+  if (specialization.includes('deathmatch') || specialization.includes('hardcore')) return 1.8;
+  if (specialization.includes('lucha')) return 1.35;
+  if (specialization.includes('strong style')) return 1.45;
+  if (specialization.includes('tag')) return 0.92;
+  return 1;
+}
+
+function isBackstageWrestlingRole(state: GameState): boolean {
+  const title = (state.career.title || '').toLowerCase();
+  const specialization = (state.career.specialization || '').toLowerCase();
+  return (
+    specialization.includes('backstage') ||
+    title.includes('writer') ||
+    title.includes('producer') ||
+    title.includes('booker')
+  );
+}
+
+function ensureWrestlingContacts(state: GameState): void {
+  const wrestlingPeople = state.relationships.filter(r => r.isAlive && (r.location === 'Arena' || r.traits.includes('Wrestling')));
+  if (wrestlingPeople.length >= 4) return;
+
+  const names = ['Chris Vale', 'Mika Storm', 'Rico Blaze', 'Noah Cross', 'Aki Sato', 'Lena Frost', 'Diego Luna', 'Tori King'];
+  const ringSideRoles = ['Co-worker', 'Co-worker', 'Co-worker', 'Boss'] as const;
+  const needed = 4 - wrestlingPeople.length;
+
+  for (let i = 0; i < needed; i++) {
+    const name = names[Math.floor(Math.random() * names.length)];
+    const type = ringSideRoles[Math.floor(Math.random() * ringSideRoles.length)];
+    state.relationships.push({
+      id: `wrestling_${Date.now()}_${Math.floor(Math.random() * 1000000)}_${i}`,
+      name,
+      type,
+      gender: Math.random() < 0.5 ? 'Male' : 'Female',
+      age: Math.max(20, state.age + Math.floor(Math.random() * 12) - 5),
+      health: 70 + Math.floor(Math.random() * 21),
+      happiness: 50 + Math.floor(Math.random() * 31),
+      smarts: 45 + Math.floor(Math.random() * 36),
+      looks: 45 + Math.floor(Math.random() * 36),
+      relationshipToPlayer: 35 + Math.floor(Math.random() * 26),
+      familiarity: 35 + Math.floor(Math.random() * 31),
+      location: 'Arena',
+      isAlive: true,
+      traits: ['Wrestling']
+    });
+  }
+}
+
+function ensureWrestlingProfile(state: GameState): void {
+  if (!state.flags.wrestling_ring_name) {
+    const handles = ['Iron Pulse', 'Silver Tempest', 'North Star', 'Atlas Prime', 'Night Comet', 'El Relampago', 'Kitsune Strike'];
+    state.flags.wrestling_ring_name = handles[Math.floor(Math.random() * handles.length)];
+  }
+
+  if (state.flags.wrestling_fan_base === undefined) {
+    setClampedFlag(state, 'wrestling_fan_base', 22 + Math.floor(Math.random() * 16));
+  }
+  if (state.flags.wrestling_momentum === undefined) {
+    setClampedFlag(state, 'wrestling_momentum', 28 + Math.floor(Math.random() * 16));
+  }
+  if (state.flags.wrestling_promo_skill === undefined) {
+    const basePromo = Math.round((state.stats.looks * 0.45) + (state.stats.smarts * 0.35) + (state.stats.willpower * 0.2));
+    setClampedFlag(state, 'wrestling_promo_skill', basePromo);
+  }
+  if (!state.flags.wrestling_alignment) {
+    state.flags.wrestling_alignment = 'face';
+  }
+  if (state.flags.wrestling_push === undefined) {
+    setClampedFlag(state, 'wrestling_push', 30 + Math.floor(Math.random() * 21));
+  }
+  if (state.flags.wrestling_retired === undefined) {
+    state.flags.wrestling_retired = false;
+  }
+  if (state.flags.wrestling_injury_years === undefined) {
+    setInjuryYears(state, 0);
+  }
+  ensureWrestlingContacts(state);
+}
 
 function spendTime(state: GameState, timeCost: number): boolean {
   if (state.currentLocation === 'Home') {
@@ -88,6 +194,9 @@ function canApply(state: GameState, def: CareerDefinition): boolean {
   if (!hasEducation(state, def.requiredEducation)) return false;
   if (state.stats.smarts < def.minSmarts) return false;
   if (state.stats.willpower < def.minWillpower) return false;
+  if (def.minAthleticism !== undefined && state.stats.athleticism < def.minAthleticism) return false;
+  if (def.minLooks !== undefined && state.stats.looks < def.minLooks) return false;
+  if (def.requiredTotalYearsExperience !== undefined && state.career.totalYearsExperience < def.requiredTotalYearsExperience) return false;
   if (def.requiredMajors && def.requiredMajors.length > 0) {
     if (!state.education.major || !def.requiredMajors.includes(state.education.major)) return false;
   }
@@ -122,7 +231,17 @@ function applyForCareer(state: GameState, careerId: string) {
     state.career.performance = 55;
     state.career.level = 1;
     state.finances.salary = def.startSalary;
-    state.history.push({ age: state.age, year: state.year, text: `You got hired as a ${def.title}.`, type: 'primary' });
+    if (def.field === 'Wrestling') {
+      ensureWrestlingProfile(state);
+      const ringName = String(state.flags.wrestling_ring_name);
+      const fanBase = getFlagNumber(state, 'wrestling_fan_base', 30);
+      const momentum = getFlagNumber(state, 'wrestling_momentum', 30);
+      setClampedFlag(state, 'wrestling_fan_base', fanBase + 8);
+      setClampedFlag(state, 'wrestling_momentum', momentum + 10);
+      state.history.push({ age: state.age, year: state.year, text: `You signed as ${def.title} and debuted under the ring name "${ringName}".`, type: 'primary' });
+    } else {
+      state.history.push({ age: state.age, year: state.year, text: `You got hired as a ${def.title}.`, type: 'primary' });
+    }
   } else {
     state.career.rejections += 1;
     state.history.push({ age: state.age, year: state.year, text: `Your ${def.title} application was rejected.`, type: 'secondary' });
@@ -168,6 +287,7 @@ export function processCareerYear(state: GameState) {
   state.career.totalYearsExperience += 1;
   if (state.career.field === 'Law') state.career.lawYearsExperience += 1;
   if (state.career.field === 'Law' && state.flags.license_bar === true) state.career.licensedLawYearsExperience += 1;
+  if (isWrestlingCareer(state)) processWrestlingYear(state);
 
   const performanceDrift = Math.floor(Math.random() * 9) - 4;
   state.career.performance = Math.max(0, Math.min(100, state.career.performance + performanceDrift));
@@ -186,7 +306,12 @@ export function processCareerYear(state: GameState) {
     !!def.promotionTitles &&
     state.career.level < def.promotionTitles.length;
 
-  if (canPromote && Math.random() < 0.55) {
+  const wrestlingPushGate = !isWrestlingCareer(state) || getFlagNumber(state, 'wrestling_push', 0) >= Math.min(85, 42 + (state.career.level * 10));
+  const promotionChance = isWrestlingCareer(state)
+    ? Math.max(0.35, Math.min(0.9, 0.38 + (getFlagNumber(state, 'wrestling_push', 35) / 180)))
+    : 0.55;
+
+  if (canPromote && wrestlingPushGate && Math.random() < promotionChance) {
     state.career.level += 1;
     state.career.title = def.promotionTitles?.[state.career.level - 1] || state.career.title;
     const promotionRaise = Math.floor(state.finances.salary * 0.12);
@@ -204,6 +329,76 @@ export function processCareerYear(state: GameState) {
     state.career.performance = 50;
     state.career.level = 0;
     state.finances.salary = 0;
+  }
+}
+
+function processWrestlingYear(state: GameState) {
+  ensureWrestlingProfile(state);
+
+  const fanBase = getFlagNumber(state, 'wrestling_fan_base', 30);
+  const momentum = getFlagNumber(state, 'wrestling_momentum', 30);
+  const push = getFlagNumber(state, 'wrestling_push', 30);
+  const promoSkill = getFlagNumber(state, 'wrestling_promo_skill', 50);
+  const injuryYears = getInjuryYears(state);
+  const isBackstage = isBackstageWrestlingRole(state);
+
+  const pushDelta = Math.floor((momentum - 50) / 14) + Math.floor((fanBase - 50) / 18) + (Math.floor(Math.random() * 5) - 2);
+  setClampedFlag(state, 'wrestling_push', push + pushDelta);
+
+  if (injuryYears > 0 && !isBackstage) {
+    setInjuryYears(state, injuryYears - 1);
+    state.stats.health = clampStat(state.stats.health + 4);
+    state.career.performance = clampStat(state.career.performance - (2 + Math.floor(Math.random() * 4)));
+    setClampedFlag(state, 'wrestling_momentum', momentum - 4);
+    state.history.push({
+      age: state.age,
+      year: state.year,
+      text: 'You spent most of the year recovering from ring injuries and missed key events.',
+      type: 'secondary'
+    });
+    return;
+  }
+
+  const exposure = Math.max(1, state.career.level);
+  const merchBonus = Math.floor((fanBase + state.career.performance + (exposure * 8) + (push * 0.7) + (promoSkill * 0.5)) * (50 + Math.random() * 80));
+  if (merchBonus > 0) {
+    state.finances.cash += merchBonus;
+    state.history.push({ age: state.age, year: state.year, text: `Merch and appearance bonuses added $${merchBonus.toLocaleString()} to your income.`, type: 'secondary' });
+  }
+
+  const momentumShift = Math.floor((state.career.performance - 50) / 12) + Math.floor((push - 45) / 15) + (Math.floor(Math.random() * 9) - 4);
+  setClampedFlag(state, 'wrestling_momentum', momentum + momentumShift);
+  setClampedFlag(state, 'wrestling_fan_base', fanBase + Math.floor((state.career.performance - 45) / 15) + (Math.floor(Math.random() * 7) - 2));
+
+  if (!isBackstage) {
+    const styleRisk = getWrestlingStyleRiskMultiplier(state);
+    const injuryChance = Math.max(0.04, Math.min(0.42, (0.07 + ((100 - state.stats.health) * 0.0016)) * styleRisk));
+    if (Math.random() < injuryChance) {
+      const severe = Math.random() < 0.3;
+      const healthLoss = severe ? 18 + Math.floor(Math.random() * 11) : 8 + Math.floor(Math.random() * 8);
+      setInjuryYears(state, severe ? 2 : 1);
+      state.stats.health = clampStat(state.stats.health - healthLoss);
+      state.career.performance = clampStat(state.career.performance - (severe ? 15 : 8));
+      setClampedFlag(state, 'wrestling_momentum', getFlagNumber(state, 'wrestling_momentum', 30) - (severe ? 16 : 8));
+      state.history.push({
+        age: state.age,
+        year: state.year,
+        text: severe
+          ? 'A major in-ring injury forced you to the sidelines and stalled your push.'
+          : 'A nagging ring injury slowed your schedule this season.',
+        type: 'primary'
+      });
+    }
+  } else {
+    const creativeBonus = Math.floor((promoSkill + push + momentum) * (20 + Math.random() * 35));
+    state.finances.cash += creativeBonus;
+    state.history.push({ age: state.age, year: state.year, text: `Your booking and production bonuses earned an extra $${creativeBonus.toLocaleString()}.`, type: 'secondary' });
+  }
+
+  const currentMomentum = getFlagNumber(state, 'wrestling_momentum', 30);
+  if (currentMomentum <= 20 && state.career.performance <= 35 && Math.random() < 0.2) {
+    state.history.push({ age: state.age, year: state.year, text: `Your promotion released you from your ${state.career.title} contract after a cold streak.`, type: 'primary' });
+    clearCareer(state);
   }
 }
 
@@ -299,6 +494,200 @@ export const CAREER_ACTIONS: CareerAction[] = [
       state.career.yearsInRole = 0;
       state.finances.salary = Math.floor(50000 + Math.random() * 35000);
       state.history.push({ age: state.age, year: state.year, text: `You launched your own ${state.career.specialization.toLowerCase()} startup.`, type: 'primary' });
+    }
+  },
+  {
+    id: 'wrestling_turn_heel',
+    name: 'Turn Heel',
+    timeCost: 2,
+    isAvailable: (state) =>
+      !!state.career.id &&
+      state.career.field === 'Wrestling' &&
+      !isBackstageWrestlingRole(state) &&
+      state.flags.wrestling_alignment !== 'heel',
+    perform: (state) => {
+      if (!spendTime(state, 2)) return;
+      ensureWrestlingProfile(state);
+      state.flags.wrestling_alignment = 'heel';
+      setClampedFlag(state, 'wrestling_momentum', getFlagNumber(state, 'wrestling_momentum', 30) + 12);
+      setClampedFlag(state, 'wrestling_fan_base', getFlagNumber(state, 'wrestling_fan_base', 30) - 5);
+      setClampedFlag(state, 'wrestling_push', getFlagNumber(state, 'wrestling_push', 30) + 8);
+      state.history.push({ age: state.age, year: state.year, text: 'You turned heel and leaned into a villain persona. The crowd reaction is loud and polarizing.', type: 'primary' });
+    }
+  },
+  {
+    id: 'wrestling_turn_face',
+    name: 'Turn Face',
+    timeCost: 2,
+    isAvailable: (state) =>
+      !!state.career.id &&
+      state.career.field === 'Wrestling' &&
+      !isBackstageWrestlingRole(state) &&
+      state.flags.wrestling_alignment !== 'face',
+    perform: (state) => {
+      if (!spendTime(state, 2)) return;
+      ensureWrestlingProfile(state);
+      state.flags.wrestling_alignment = 'face';
+      setClampedFlag(state, 'wrestling_momentum', getFlagNumber(state, 'wrestling_momentum', 30) + 8);
+      setClampedFlag(state, 'wrestling_fan_base', getFlagNumber(state, 'wrestling_fan_base', 30) + 10);
+      state.history.push({ age: state.age, year: state.year, text: 'You turned face and the audience started rallying behind you.', type: 'primary' });
+    }
+  },
+  {
+    id: 'wrestling_cut_promo',
+    name: 'Cut Promo',
+    timeCost: 2,
+    isAvailable: (state) => !!state.career.id && state.career.field === 'Wrestling',
+    perform: (state) => {
+      if (!spendTime(state, 2)) return;
+      ensureWrestlingProfile(state);
+      const promoRoll = Math.floor((state.stats.looks + state.stats.smarts + state.stats.willpower) / 32) + (Math.floor(Math.random() * 10) - 2);
+      setClampedFlag(state, 'wrestling_promo_skill', getFlagNumber(state, 'wrestling_promo_skill', 45) + promoRoll);
+      setClampedFlag(state, 'wrestling_momentum', getFlagNumber(state, 'wrestling_momentum', 30) + Math.floor(promoRoll / 2));
+      setClampedFlag(state, 'wrestling_fan_base', getFlagNumber(state, 'wrestling_fan_base', 30) + Math.max(1, Math.floor(promoRoll / 3)));
+      state.career.performance = clampStat(state.career.performance + Math.max(1, Math.floor(promoRoll / 3)));
+      state.history.push({ age: state.age, year: state.year, text: 'You delivered a strong promo that raised your profile.', type: 'secondary' });
+    }
+  },
+  {
+    id: 'wrestling_work_house_show',
+    name: 'Work House Show Loop',
+    timeCost: 3,
+    isAvailable: (state) => !!state.career.id && state.career.field === 'Wrestling' && !isBackstageWrestlingRole(state),
+    perform: (state) => {
+      if (!spendTime(state, 3)) return;
+      ensureWrestlingProfile(state);
+      const gateBonus = Math.floor((getFlagNumber(state, 'wrestling_fan_base', 30) + getFlagNumber(state, 'wrestling_push', 30)) * (140 + Math.random() * 140));
+      state.finances.cash += gateBonus;
+      state.career.performance = clampStat(state.career.performance + 4 + Math.floor(Math.random() * 6));
+      setClampedFlag(state, 'wrestling_momentum', getFlagNumber(state, 'wrestling_momentum', 30) + 4);
+      setClampedFlag(state, 'wrestling_fan_base', getFlagNumber(state, 'wrestling_fan_base', 30) + 3);
+
+      const bumpRisk = Math.max(0.04, Math.min(0.3, 0.06 + ((100 - state.stats.health) * 0.0014)));
+      if (Math.random() < bumpRisk) {
+        setInjuryYears(state, Math.max(getInjuryYears(state), 1));
+        state.stats.health = clampStat(state.stats.health - (6 + Math.floor(Math.random() * 7)));
+        state.history.push({ age: state.age, year: state.year, text: `You worked the house show circuit and earned $${gateBonus.toLocaleString()}, but picked up a minor injury.`, type: 'primary' });
+        return;
+      }
+
+      state.history.push({ age: state.age, year: state.year, text: `You worked the house show circuit and earned $${gateBonus.toLocaleString()}.`, type: 'secondary' });
+    }
+  },
+  {
+    id: 'wrestling_sell_merch',
+    name: 'Push Merch Campaign',
+    timeCost: 2,
+    isAvailable: (state) => !!state.career.id && state.career.field === 'Wrestling',
+    perform: (state) => {
+      if (!spendTime(state, 2)) return;
+      ensureWrestlingProfile(state);
+      const alignmentBoost = state.flags.wrestling_alignment === 'face' ? 1.08 : 1.03;
+      const payout = Math.floor((getFlagNumber(state, 'wrestling_fan_base', 30) + getFlagNumber(state, 'wrestling_promo_skill', 50)) * (110 + Math.random() * 170) * alignmentBoost);
+      state.finances.cash += payout;
+      setClampedFlag(state, 'wrestling_push', getFlagNumber(state, 'wrestling_push', 30) + 3);
+      state.history.push({ age: state.age, year: state.year, text: `Your merch campaign connected with fans and brought in $${payout.toLocaleString()}.`, type: 'secondary' });
+    }
+  },
+  {
+    id: 'wrestling_negotiate_push',
+    name: 'Negotiate Creative Push',
+    timeCost: 2,
+    isAvailable: (state) => !!state.career.id && state.career.field === 'Wrestling',
+    perform: (state) => {
+      if (!spendTime(state, 2)) return;
+      ensureWrestlingProfile(state);
+      const leverage = (
+        getFlagNumber(state, 'wrestling_momentum', 30) * 0.35 +
+        getFlagNumber(state, 'wrestling_fan_base', 30) * 0.35 +
+        getFlagNumber(state, 'wrestling_promo_skill', 45) * 0.2 +
+        state.career.performance * 0.1
+      );
+      const successChance = Math.max(0.18, Math.min(0.86, (leverage - 28) / 85));
+      if (Math.random() < successChance) {
+        setClampedFlag(state, 'wrestling_push', getFlagNumber(state, 'wrestling_push', 30) + 12);
+        setClampedFlag(state, 'wrestling_momentum', getFlagNumber(state, 'wrestling_momentum', 30) + 8);
+        state.career.performance = clampStat(state.career.performance + 5);
+        state.history.push({ age: state.age, year: state.year, text: 'Creative approved a stronger push for your character.', type: 'primary' });
+      } else {
+        setClampedFlag(state, 'wrestling_momentum', getFlagNumber(state, 'wrestling_momentum', 30) - 6);
+        state.career.performance = clampStat(state.career.performance - 3);
+        state.history.push({ age: state.age, year: state.year, text: 'Your push request was rejected this cycle.', type: 'secondary' });
+      }
+    }
+  },
+  {
+    id: 'wrestling_rehab',
+    name: 'Rehab and Conditioning',
+    timeCost: 2,
+    isAvailable: (state) =>
+      !!state.career.id &&
+      state.career.field === 'Wrestling' &&
+      (getInjuryYears(state) > 0 || state.stats.health < 85),
+    perform: (state) => {
+      if (!spendTime(state, 2)) return;
+      const injuryYears = getInjuryYears(state);
+      if (injuryYears > 0) setInjuryYears(state, injuryYears - 1);
+      state.stats.health = clampStat(state.stats.health + 10 + Math.floor(Math.random() * 6));
+      state.stats.athleticism = clampStat(state.stats.athleticism + 2);
+      state.career.performance = clampStat(state.career.performance + 2);
+      state.history.push({ age: state.age, year: state.year, text: 'You focused on rehab and conditioning to extend your career.', type: 'secondary' });
+    }
+  },
+  {
+    id: 'wrestling_retire',
+    name: 'Retire from In-Ring Competition',
+    timeCost: 1,
+    isAvailable: (state) =>
+      !!state.career.id &&
+      state.career.field === 'Wrestling' &&
+      !isBackstageWrestlingRole(state) &&
+      (state.age >= 34 || getInjuryYears(state) > 0 || state.stats.health <= 55),
+    perform: (state) => {
+      if (!spendTime(state, 1)) return;
+      state.flags.wrestling_retired = true;
+      setInjuryYears(state, 0);
+      const title = state.career.title;
+      clearCareer(state);
+      state.history.push({ age: state.age, year: state.year, text: `You retired from in-ring competition after your run as ${title}.`, type: 'primary' });
+    }
+  },
+  {
+    id: 'wrestling_backstage_write_show',
+    name: 'Write Weekly Show',
+    timeCost: 2,
+    isAvailable: (state) => !!state.career.id && state.career.field === 'Wrestling' && isBackstageWrestlingRole(state),
+    perform: (state) => {
+      if (!spendTime(state, 2)) return;
+      ensureWrestlingProfile(state);
+      const creativeGain = 4 + Math.floor(Math.random() * 7);
+      setClampedFlag(state, 'wrestling_momentum', getFlagNumber(state, 'wrestling_momentum', 30) + creativeGain);
+      setClampedFlag(state, 'wrestling_push', getFlagNumber(state, 'wrestling_push', 30) + Math.floor(creativeGain / 2));
+      state.career.performance = clampStat(state.career.performance + Math.floor(creativeGain / 2));
+      state.stats.smarts = clampStat(state.stats.smarts + 1);
+      state.history.push({ age: state.age, year: state.year, text: 'You mapped out stories and finishes for the upcoming cards.', type: 'secondary' });
+    }
+  },
+  {
+    id: 'wrestling_backstage_produce_match',
+    name: 'Produce Featured Match',
+    timeCost: 2,
+    isAvailable: (state) => !!state.career.id && state.career.field === 'Wrestling' && isBackstageWrestlingRole(state),
+    perform: (state) => {
+      if (!spendTime(state, 2)) return;
+      ensureWrestlingProfile(state);
+      const successRoll = Math.random();
+      if (successRoll < 0.75) {
+        setClampedFlag(state, 'wrestling_momentum', getFlagNumber(state, 'wrestling_momentum', 30) + 7);
+        setClampedFlag(state, 'wrestling_fan_base', getFlagNumber(state, 'wrestling_fan_base', 30) + 4);
+        state.career.performance = clampStat(state.career.performance + 5);
+        state.finances.cash += 12000 + Math.floor(Math.random() * 18000);
+        state.history.push({ age: state.age, year: state.year, text: 'The featured match landed perfectly and drew strong fan buzz.', type: 'primary' });
+      } else {
+        setClampedFlag(state, 'wrestling_momentum', getFlagNumber(state, 'wrestling_momentum', 30) - 6);
+        state.career.performance = clampStat(state.career.performance - 3);
+        state.history.push({ age: state.age, year: state.year, text: 'The produced match underdelivered and drew criticism backstage.', type: 'secondary' });
+      }
     }
   },
   {

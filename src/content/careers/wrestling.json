@@ -1,0 +1,319 @@
+[
+  {
+    "id": "pro_wrestling_trainee",
+    "title": "Pro Wrestling Trainee",
+    "field": "Wrestling",
+    "specialization": "Fundamentals",
+    "requiredEducation": "High School",
+    "minAge": 18,
+    "minSmarts": 38,
+    "minWillpower": 55,
+    "minAthleticism": 55,
+    "minLooks": 40,
+    "startSalary": 24000,
+    "annualRaise": 0.04,
+    "difficulty": 0.34,
+    "promotionTitles": [
+      "Trainee",
+      "Developmental Rookie",
+      "Advanced Trainee",
+      "Prospect"
+    ]
+  },
+  {
+    "id": "indie_wrestler",
+    "title": "Independent Circuit Wrestler",
+    "field": "Wrestling",
+    "specialization": "Indie Singles",
+    "requiredEducation": "High School",
+    "minAge": 19,
+    "minSmarts": 42,
+    "minWillpower": 60,
+    "minAthleticism": 62,
+    "minLooks": 42,
+    "startSalary": 36000,
+    "annualRaise": 0.06,
+    "difficulty": 0.48,
+    "promotionTitles": [
+      "Local Opener",
+      "Indie Midcard Talent",
+      "Regional Headliner",
+      "Traveling Indie Main Eventer"
+    ]
+  },
+  {
+    "id": "indie_tag_wrestler",
+    "title": "Independent Tag Team Wrestler",
+    "field": "Wrestling",
+    "specialization": "Indie Tag Team",
+    "requiredEducation": "High School",
+    "minAge": 19,
+    "minSmarts": 40,
+    "minWillpower": 62,
+    "minAthleticism": 64,
+    "minLooks": 40,
+    "startSalary": 38000,
+    "annualRaise": 0.06,
+    "difficulty": 0.5,
+    "promotionTitles": [
+      "Tag Team Prospect",
+      "Tag Team Specialist",
+      "Regional Tag Team Headliner",
+      "Tag Team Circuit Ace"
+    ]
+  },
+  {
+    "id": "cmll_luchador",
+    "title": "CMLL Luchador",
+    "field": "Wrestling",
+    "specialization": "Lucha Libre",
+    "requiredEducation": "High School",
+    "minAge": 20,
+    "minSmarts": 46,
+    "minWillpower": 66,
+    "minAthleticism": 70,
+    "minLooks": 46,
+    "startSalary": 52000,
+    "annualRaise": 0.07,
+    "difficulty": 0.62,
+    "promotionTitles": [
+      "Apertura Card Luchador",
+      "Featured CMLL Luchador",
+      "Semi-Main Event Tecnico/Rudo",
+      "Arena Mexico Main Event Star"
+    ]
+  },
+  {
+    "id": "njpw_dojo_wrestler",
+    "title": "NJPW Dojo Wrestler",
+    "field": "Wrestling",
+    "specialization": "Strong Style",
+    "requiredEducation": "High School",
+    "minAge": 20,
+    "minSmarts": 50,
+    "minWillpower": 70,
+    "minAthleticism": 74,
+    "minLooks": 45,
+    "startSalary": 60000,
+    "annualRaise": 0.07,
+    "difficulty": 0.68,
+    "promotionTitles": [
+      "Young Lion",
+      "Returning Contender",
+      "NJPW Featured Singles Talent",
+      "Tokyo Dome Main Event Talent"
+    ]
+  },
+  {
+    "id": "indie_deathmatch_wrestler",
+    "title": "Independent Deathmatch Wrestler",
+    "field": "Wrestling",
+    "specialization": "Hardcore/Deathmatch",
+    "requiredEducation": "High School",
+    "minAge": 21,
+    "minSmarts": 36,
+    "minWillpower": 74,
+    "minAthleticism": 68,
+    "minLooks": 36,
+    "startSalary": 42000,
+    "annualRaise": 0.05,
+    "difficulty": 0.72,
+    "promotionTitles": [
+      "Hardcore Attraction",
+      "Regional Deathmatch Standout",
+      "Deathmatch Main Event Talent",
+      "Deathmatch Circuit Legend"
+    ]
+  },
+  {
+    "id": "aew_wrestler",
+    "title": "AEW Wrestler",
+    "field": "Wrestling",
+    "specialization": "Televised Promotion",
+    "requiredEducation": "High School",
+    "minAge": 22,
+    "minSmarts": 54,
+    "minWillpower": 72,
+    "minAthleticism": 76,
+    "minLooks": 54,
+    "startSalary": 120000,
+    "annualRaise": 0.09,
+    "difficulty": 0.78,
+    "promotionTitles": [
+      "AEW Roster Wrestler",
+      "Dynamite/Collision Featured Talent",
+      "AEW Main Event Star",
+      "AEW Franchise Champion"
+    ]
+  },
+  {
+    "id": "wwe_nxt_superstar",
+    "title": "WWE NXT Superstar",
+    "field": "Wrestling",
+    "specialization": "Sports Entertainment Development",
+    "requiredEducation": "High School",
+    "minAge": 21,
+    "minSmarts": 52,
+    "minWillpower": 70,
+    "minAthleticism": 74,
+    "minLooks": 58,
+    "startSalary": 85000,
+    "annualRaise": 0.08,
+    "difficulty": 0.75,
+    "promotionTitles": [
+      "NXT Prospect",
+      "NXT Featured Superstar",
+      "NXT Main Event Superstar",
+      "NXT Standard-Bearer"
+    ]
+  },
+  {
+    "id": "wwe_superstar",
+    "title": "WWE Superstar",
+    "field": "Wrestling",
+    "specialization": "Global Mainstream Sports Entertainment",
+    "requiredEducation": "High School",
+    "minAge": 23,
+    "minSmarts": 58,
+    "minWillpower": 78,
+    "minAthleticism": 80,
+    "minLooks": 65,
+    "requiredTotalYearsExperience": 4,
+    "startSalary": 180000,
+    "annualRaise": 0.1,
+    "difficulty": 0.86,
+    "promotionTitles": [
+      "Main Roster Superstar",
+      "Featured Premium Live Event Superstar",
+      "Main Event WWE Superstar",
+      "WrestleMania Headliner"
+    ]
+  },
+  {
+    "id": "global_free_agent_wrestler",
+    "title": "Global Free Agent Wrestler",
+    "field": "Wrestling",
+    "specialization": "Cross-Promotion Touring",
+    "requiredEducation": "High School",
+    "minAge": 25,
+    "minSmarts": 56,
+    "minWillpower": 76,
+    "minAthleticism": 77,
+    "minLooks": 60,
+    "requiredTotalYearsExperience": 6,
+    "startSalary": 140000,
+    "annualRaise": 0.11,
+    "difficulty": 0.84,
+    "promotionTitles": [
+      "International Touring Wrestler",
+      "Cross-Promotion Attraction",
+      "Global Draw",
+      "All-World Box Office Headliner"
+    ]
+  },
+  {
+    "id": "indie_booker_promoter",
+    "title": "Independent Booker/Promoter",
+    "field": "Wrestling",
+    "specialization": "Backstage Creative",
+    "requiredEducation": "High School",
+    "requiredFlagsAll": ["wrestling_retired"],
+    "requiredTotalYearsExperience": 5,
+    "minAge": 28,
+    "minSmarts": 62,
+    "minWillpower": 70,
+    "startSalary": 70000,
+    "annualRaise": 0.09,
+    "difficulty": 0.7,
+    "promotionTitles": [
+      "Indie Matchmaker",
+      "Lead Booker",
+      "Head of Creative",
+      "Promotion Owner-Operator"
+    ]
+  },
+  {
+    "id": "cmll_matchmaker",
+    "title": "CMLL Matchmaker",
+    "field": "Wrestling",
+    "specialization": "Backstage Lucha Creative",
+    "requiredEducation": "High School",
+    "requiredFlagsAll": ["wrestling_retired"],
+    "requiredTotalYearsExperience": 7,
+    "minAge": 30,
+    "minSmarts": 68,
+    "minWillpower": 72,
+    "startSalary": 90000,
+    "annualRaise": 0.08,
+    "difficulty": 0.75,
+    "promotionTitles": [
+      "Assistant Matchmaker",
+      "CMLL Creative Producer",
+      "Arena Mexico Head Booker",
+      "Director of Lucha Programming"
+    ]
+  },
+  {
+    "id": "njpw_booker",
+    "title": "NJPW Booker",
+    "field": "Wrestling",
+    "specialization": "Backstage Strong Style Creative",
+    "requiredEducation": "High School",
+    "requiredFlagsAll": ["wrestling_retired"],
+    "requiredTotalYearsExperience": 8,
+    "minAge": 31,
+    "minSmarts": 72,
+    "minWillpower": 76,
+    "startSalary": 105000,
+    "annualRaise": 0.09,
+    "difficulty": 0.8,
+    "promotionTitles": [
+      "Tour Producer",
+      "Tournament Booking Lead",
+      "Head Booker",
+      "Executive Creative Director"
+    ]
+  },
+  {
+    "id": "aew_producer",
+    "title": "AEW Match Producer",
+    "field": "Wrestling",
+    "specialization": "Backstage TV Production",
+    "requiredEducation": "High School",
+    "requiredFlagsAll": ["wrestling_retired"],
+    "requiredTotalYearsExperience": 7,
+    "minAge": 30,
+    "minSmarts": 70,
+    "minWillpower": 74,
+    "startSalary": 115000,
+    "annualRaise": 0.09,
+    "difficulty": 0.79,
+    "promotionTitles": [
+      "Associate Producer",
+      "TV Match Producer",
+      "Lead Producer",
+      "Senior Vice President, Talent Relations"
+    ]
+  },
+  {
+    "id": "wwe_writer",
+    "title": "WWE Creative Writer",
+    "field": "Wrestling",
+    "specialization": "Backstage Sports Entertainment Creative",
+    "requiredEducation": "Bachelor",
+    "requiredFlagsAll": ["wrestling_retired"],
+    "requiredTotalYearsExperience": 8,
+    "minAge": 31,
+    "minSmarts": 74,
+    "minWillpower": 76,
+    "startSalary": 125000,
+    "annualRaise": 0.1,
+    "difficulty": 0.82,
+    "promotionTitles": [
+      "Associate Writer",
+      "Lead Segment Writer",
+      "Senior Creative Producer",
+      "Head of Creative"
+    ]
+  }
+]
