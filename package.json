@@ -7,7 +7,8 @@
     "dev": "vite",
     "test": "tsc -p tsconfig.test.json && echo '{\"type\":\"commonjs\"}' > dist-tests/package.json && node dist-tests/tests/testRunner.js",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "npm run build && cp dist/index.html dist/404.html && npx gh-pages -d dist"
   },
   "devDependencies": {
     "typescript": "^5.6.3",

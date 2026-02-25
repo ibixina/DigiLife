@@ -32,6 +32,58 @@ npm run dev
 
 Dev server runs on port `5173`.
 
+## GitHub Pages Deployment
+
+This project can be deployed to GitHub Pages for free hosting:
+
+### Quick Deploy (Manual)
+```bash
+# Install gh-pages if not already installed
+npm install -g gh-pages
+
+# Deploy to GitHub Pages (replace 'DigiLife' with your repo name)
+npm run deploy
+```
+
+### Automatic Deployment (Recommended)
+1. **Enable GitHub Pages**:
+   - Go to repository Settings → Pages
+   - Set Source to "Deploy from a branch"
+   - Select "gh-pages" branch, "/ (root)" folder
+
+2. **Automatic builds** (add this to your workflow or use GitHub Actions):
+   ```yaml
+   # .github/workflows/deploy.yml
+   name: Deploy to GitHub Pages
+   on:
+     push:
+       branches: [ main ]
+   jobs:
+     deploy:
+       runs-on: ubuntu-latest
+       steps:
+         - uses: actions/checkout@v2
+         - uses: actions/setup-node@v2
+           with:
+             node-version: '18'
+         - run: npm ci
+         - run: npm run build
+         - run: cp dist/index.html dist/404.html
+         - uses: peaceiris/actions-gh-pages@v3
+           with:
+             github_token: ${{ secrets.GITHUB_TOKEN }}
+             publish_dir: ./dist
+   ```
+
+### Local Testing
+```bash
+# Test production build locally
+npm run build
+npm run preview
+```
+
+**Note**: Update `vite.config.ts` base path from `/DigiLife/` to match your repository name.
+
 ## Scripts
 
 - `npm run dev` - start local dev server
