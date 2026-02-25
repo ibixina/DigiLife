@@ -8,17 +8,18 @@
  |____/|_|___/    |_____|_|_|      
 ```
 
-DigiLife is a web-based life emulation game.
+DigiLife is a web-based life simulation game inspired by BitLife with card-style yearly decisions and a brutalist retro interface.
 
 ## Current Status
 
 - Runtime: vanilla TypeScript + Vite
 - Architecture: single state atom + event bus + data-driven content
-- Current implemented phases:
-  - Phase 2: Core stats + passive yearly systems
-  - Phase 3: Activities + high-freedom relationship interactions
-  - Phase 4: Education + career progression (Engineering + Law)
-  - Phase 7 (partial): secret shadow-crime pathway (serial-killer loop)
+- **Implemented Systems (Phases 1-4 Complete)**:
+  - ✅ **Phase 1**: Foundation (Core Engine & UI)
+  - ✅ **Phase 2**: Core stats + passive yearly systems  
+  - ✅ **Phase 3**: Activities + high-freedom relationship interactions
+  - ✅ **Phase 4**: Education + career progression (Engineering + Law + Wrestling)
+  - 🔄 **Phase 7 (partial)**: secret shadow-crime pathway (serial-killer loop)
 
 See `PROGRESS.md` for the full phase checklist.
 
@@ -69,6 +70,12 @@ Dev server runs on port `5173`.
   - data-driven catalog loading from `src/content/careers/*.json`
   - eligibility filters by age/stats/education/flags
   - hiring, performance, raises, promotions, firing, resignation
+  - **Engineering**: software, electrical, molecular, nuclear engineer paths
+  - **Law**: legal assistant → paralegal → attorney → prosecutor/public defender → judge
+  - **Wrestling**: comprehensive wrestling career with promotions, contracts, storylines
+  - indie circuit → major promotions (AEW, WWE) → global free agent
+  - backstage roles: booker, promoter, writer, producer
+  - contract negotiations, rival offers, fan base building
   - engineering startup path
 - Law track:
   - legal assistant/paralegal/attorney/prosecutor/public defender/judge
@@ -78,6 +85,12 @@ Dev server runs on port `5173`.
   - double-life vs full-time modes
   - contract board + payout/risk
   - heat/notoriety/capture loop
+
+- Events:
+  - weighted random event system with conditional triggers
+  - age-specific childhood/teen/adult events
+  - multi-choice outcomes with stat changes and consequences
+  - unique events (spelling bee, first crush, etc.)
 
 ## Content-Driven Expansion
 
