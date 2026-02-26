@@ -1,0 +1,237 @@
+[
+    {
+        "id": "universal_healthcare",
+        "name": "Universal Healthcare Act",
+        "description": "Establish government-funded healthcare for all citizens.",
+        "ideology": "left",
+        "minLevel": 3,
+        "approvalEffect": {
+            "left": 15,
+            "center": 3,
+            "right": -10
+        },
+        "netApprovalEffect": 3,
+        "economyEffect": -5,
+        "karmaEffect": 10,
+        "prerequisitePolicies": [],
+        "conflictsPolicies": [
+            "privatize_healthcare"
+        ]
+    },
+    {
+        "id": "privatize_healthcare",
+        "name": "Healthcare Privatization Act",
+        "description": "Open healthcare to full market competition.",
+        "ideology": "right",
+        "minLevel": 3,
+        "approvalEffect": {
+            "left": -12,
+            "center": -2,
+            "right": 14
+        },
+        "netApprovalEffect": -2,
+        "economyEffect": 5,
+        "karmaEffect": -5,
+        "prerequisitePolicies": [],
+        "conflictsPolicies": [
+            "universal_healthcare"
+        ]
+    },
+    {
+        "id": "tax_the_rich",
+        "name": "Wealth Tax Initiative",
+        "description": "Impose a 2% annual tax on fortunes above $50 million.",
+        "ideology": "left",
+        "minLevel": 2,
+        "approvalEffect": {
+            "left": 18,
+            "center": 5,
+            "right": -15
+        },
+        "netApprovalEffect": 4,
+        "economyEffect": 3,
+        "karmaEffect": 8,
+        "prerequisitePolicies": [],
+        "conflictsPolicies": [
+            "tax_cuts"
+        ]
+    },
+    {
+        "id": "tax_cuts",
+        "name": "Broad Tax Cut Package",
+        "description": "Reduce income taxes across all brackets.",
+        "ideology": "right",
+        "minLevel": 2,
+        "approvalEffect": {
+            "left": -10,
+            "center": 8,
+            "right": 15
+        },
+        "netApprovalEffect": 5,
+        "economyEffect": -3,
+        "karmaEffect": -2,
+        "prerequisitePolicies": [],
+        "conflictsPolicies": [
+            "tax_the_rich"
+        ]
+    },
+    {
+        "id": "green_energy",
+        "name": "Green Energy Transition",
+        "description": "Mandate a national transition to renewable energy sources.",
+        "ideology": "left",
+        "minLevel": 3,
+        "approvalEffect": {
+            "left": 12,
+            "center": 6,
+            "right": -8
+        },
+        "netApprovalEffect": 4,
+        "economyEffect": -2,
+        "karmaEffect": 12,
+        "prerequisitePolicies": [],
+        "conflictsPolicies": []
+    },
+    {
+        "id": "infrastructure_bill",
+        "name": "National Infrastructure Revitalization",
+        "description": "Fund a comprehensive rebuild of roads, bridges, and broadband.",
+        "ideology": "center",
+        "minLevel": 3,
+        "approvalEffect": {
+            "left": 8,
+            "center": 12,
+            "right": 5
+        },
+        "netApprovalEffect": 8,
+        "economyEffect": 6,
+        "karmaEffect": 5,
+        "prerequisitePolicies": [],
+        "conflictsPolicies": []
+    },
+    {
+        "id": "free_education",
+        "name": "Free Public University Act",
+        "description": "Eliminate tuition at all public universities.",
+        "ideology": "left",
+        "minLevel": 3,
+        "approvalEffect": {
+            "left": 20,
+            "center": 4,
+            "right": -12
+        },
+        "netApprovalEffect": 6,
+        "economyEffect": -6,
+        "karmaEffect": 10,
+        "prerequisitePolicies": [],
+        "conflictsPolicies": []
+    },
+    {
+        "id": "military_expansion",
+        "name": "Armed Forces Expansion Act",
+        "description": "Increase defense budget by 20% and expand troop numbers.",
+        "ideology": "right",
+        "minLevel": 4,
+        "approvalEffect": {
+            "left": -10,
+            "center": 2,
+            "right": 12
+        },
+        "netApprovalEffect": 2,
+        "economyEffect": -4,
+        "karmaEffect": -3,
+        "militaryControlEffect": 10,
+        "prerequisitePolicies": [],
+        "conflictsPolicies": []
+    },
+    {
+        "id": "media_censorship",
+        "name": "National Media Standards Act",
+        "description": "Establish government oversight of broadcast media.",
+        "ideology": "authoritarian",
+        "minLevel": 4,
+        "approvalEffect": {
+            "left": -15,
+            "center": -8,
+            "right": -5
+        },
+        "netApprovalEffect": -8,
+        "economyEffect": 0,
+        "karmaEffect": -15,
+        "mediaControlEffect": 15,
+        "authoritarianEffect": 10,
+        "prerequisitePolicies": [],
+        "conflictsPolicies": []
+    },
+    {
+        "id": "term_limit_removal",
+        "name": "Constitutional Amendment — Term Limits Removal",
+        "description": "Remove presidential term limits from the constitution.",
+        "ideology": "authoritarian",
+        "minLevel": 4,
+        "approvalEffect": {
+            "left": -20,
+            "center": -15,
+            "right": -10
+        },
+        "netApprovalEffect": -15,
+        "economyEffect": 0,
+        "karmaEffect": -20,
+        "authoritarianEffect": 20,
+        "prerequisitePolicies": [],
+        "conflictsPolicies": []
+    },
+    {
+        "id": "emergency_powers",
+        "name": "National Emergency Powers Act",
+        "description": "Grant the executive branch expanded emergency powers.",
+        "ideology": "authoritarian",
+        "minLevel": 4,
+        "approvalEffect": {
+            "left": -12,
+            "center": -5,
+            "right": 3
+        },
+        "netApprovalEffect": -5,
+        "economyEffect": 0,
+        "karmaEffect": -10,
+        "authoritarianEffect": 15,
+        "prerequisitePolicies": [],
+        "conflictsPolicies": []
+    },
+    {
+        "id": "immigration_reform",
+        "name": "Immigration Reform Bill",
+        "description": "Create a path to citizenship for undocumented residents.",
+        "ideology": "left",
+        "minLevel": 3,
+        "approvalEffect": {
+            "left": 15,
+            "center": 3,
+            "right": -12
+        },
+        "netApprovalEffect": 3,
+        "economyEffect": 4,
+        "karmaEffect": 10,
+        "prerequisitePolicies": [],
+        "conflictsPolicies": []
+    },
+    {
+        "id": "anti_corruption_act",
+        "name": "Anti-Corruption Transparency Act",
+        "description": "Mandate financial disclosures and independent oversight.",
+        "ideology": "center",
+        "minLevel": 2,
+        "approvalEffect": {
+            "left": 10,
+            "center": 14,
+            "right": 8
+        },
+        "netApprovalEffect": 11,
+        "economyEffect": 2,
+        "karmaEffect": 15,
+        "corruptionEffect": -10,
+        "prerequisitePolicies": [],
+        "conflictsPolicies": []
+    }
+]

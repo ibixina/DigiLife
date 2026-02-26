@@ -1,0 +1,1007 @@
+[
+    {
+        "id": "student_government_run",
+        "title": "Run for Student Government",
+        "description": "Your peers have suggested you run for class president. It's your first taste of politics.",
+        "icon": "🏛️",
+        "category": "political",
+        "minAge": 14,
+        "maxAge": 18,
+        "weight": 50,
+        "unique": true,
+        "conditions": [
+            {
+                "type": "age",
+                "operator": "lte",
+                "value": 18
+            }
+        ],
+        "choices": [
+            {
+                "text": "Run for class president",
+                "effects": [
+                    {
+                        "type": "political",
+                        "target": "totalPoliticalYears",
+                        "operation": "add",
+                        "value": 1
+                    },
+                    {
+                        "type": "political",
+                        "target": "influence",
+                        "operation": "add",
+                        "value": 5
+                    },
+                    {
+                        "type": "stat",
+                        "target": "smarts",
+                        "operation": "add",
+                        "value": 2
+                    }
+                ],
+                "outcomes": [
+                    {
+                        "chance": 0.6,
+                        "description": "You won the election! The whole school knows your name now.",
+                        "effects": [
+                            {
+                                "type": "stat",
+                                "target": "happiness",
+                                "operation": "add",
+                                "value": 10
+                            },
+                            {
+                                "type": "political",
+                                "target": "approvalRating",
+                                "operation": "add",
+                                "value": 5
+                            }
+                        ]
+                    },
+                    {
+                        "chance": 0.4,
+                        "description": "You lost to the popular kid. Stings a bit, but you learned a lot.",
+                        "effects": [
+                            {
+                                "type": "stat",
+                                "target": "happiness",
+                                "operation": "add",
+                                "value": -5
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "text": "Decline — not interested in politics",
+                "effects": []
+            }
+        ]
+    },
+    {
+        "id": "political_awakening",
+        "title": "Political Awakening",
+        "description": "You attend a massive rally and hear a charismatic speaker. Something stirs inside you.",
+        "icon": "✊",
+        "category": "political",
+        "minAge": 16,
+        "maxAge": 25,
+        "weight": 40,
+        "unique": true,
+        "conditions": [],
+        "choices": [
+            {
+                "text": "Join the movement",
+                "effects": [
+                    {
+                        "type": "political",
+                        "target": "totalPoliticalYears",
+                        "operation": "add",
+                        "value": 1
+                    },
+                    {
+                        "type": "political",
+                        "target": "influence",
+                        "operation": "add",
+                        "value": 8
+                    },
+                    {
+                        "type": "stat",
+                        "target": "karma",
+                        "operation": "add",
+                        "value": 5
+                    },
+                    {
+                        "type": "flag",
+                        "target": "political_awakened",
+                        "operation": "set"
+                    }
+                ]
+            },
+            {
+                "text": "It was interesting, but not for you",
+                "effects": [
+                    {
+                        "type": "stat",
+                        "target": "smarts",
+                        "operation": "add",
+                        "value": 1
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "congressional_internship",
+        "title": "Congressional Internship Offer",
+        "description": "A local congressional office is looking for interns. This could be a foot in the door.",
+        "icon": "📋",
+        "category": "political",
+        "minAge": 18,
+        "maxAge": 24,
+        "weight": 35,
+        "unique": true,
+        "conditions": [
+            {
+                "type": "age",
+                "operator": "gte",
+                "value": 18
+            }
+        ],
+        "choices": [
+            {
+                "text": "Accept the internship",
+                "effects": [
+                    {
+                        "type": "political",
+                        "target": "totalPoliticalYears",
+                        "operation": "add",
+                        "value": 1
+                    },
+                    {
+                        "type": "political",
+                        "target": "influence",
+                        "operation": "add",
+                        "value": 10
+                    },
+                    {
+                        "type": "stat",
+                        "target": "smarts",
+                        "operation": "add",
+                        "value": 3
+                    },
+                    {
+                        "type": "flag",
+                        "target": "political_interned",
+                        "operation": "set"
+                    }
+                ]
+            },
+            {
+                "text": "Decline — you have other plans",
+                "effects": []
+            }
+        ]
+    },
+    {
+        "id": "political_debate_night",
+        "title": "The Big Debate",
+        "description": "You're on stage for a televised debate against your opponent. The cameras are rolling and millions are watching.",
+        "icon": "🎙️",
+        "category": "political",
+        "minAge": 25,
+        "maxAge": 80,
+        "weight": 80,
+        "unique": false,
+        "conditions": [
+            {
+                "type": "political",
+                "target": "campaignActive",
+                "operator": "eq",
+                "value": true
+            }
+        ],
+        "choices": [
+            {
+                "text": "Attack your opponent's record aggressively",
+                "outcomes": [
+                    {
+                        "chance": 0.4,
+                        "description": "Your attacks landed perfectly. The audience is fired up!",
+                        "effects": [
+                            {
+                                "type": "political",
+                                "target": "approvalRating",
+                                "operation": "add",
+                                "value": 8
+                            },
+                            {
+                                "type": "political",
+                                "target": "debatesWon",
+                                "operation": "add",
+                                "value": 1
+                            }
+                        ]
+                    },
+                    {
+                        "chance": 0.35,
+                        "description": "Your opponent countered effectively. It's a draw.",
+                        "effects": [
+                            {
+                                "type": "political",
+                                "target": "approvalRating",
+                                "operation": "add",
+                                "value": 1
+                            }
+                        ]
+                    },
+                    {
+                        "chance": 0.25,
+                        "description": "You came across as mean-spirited. The audience booed.",
+                        "effects": [
+                            {
+                                "type": "political",
+                                "target": "approvalRating",
+                                "operation": "add",
+                                "value": -6
+                            },
+                            {
+                                "type": "stat",
+                                "target": "karma",
+                                "operation": "add",
+                                "value": -5
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "text": "Stay calm and present your policies clearly",
+                "outcomes": [
+                    {
+                        "chance": 0.6,
+                        "description": "Your composure impressed the audience. You looked presidential.",
+                        "effects": [
+                            {
+                                "type": "political",
+                                "target": "approvalRating",
+                                "operation": "add",
+                                "value": 5
+                            },
+                            {
+                                "type": "political",
+                                "target": "debatesWon",
+                                "operation": "add",
+                                "value": 1
+                            }
+                        ]
+                    },
+                    {
+                        "chance": 0.4,
+                        "description": "Your answers were solid but forgettable. No major impact.",
+                        "effects": [
+                            {
+                                "type": "political",
+                                "target": "approvalRating",
+                                "operation": "add",
+                                "value": 1
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "text": "Make an outrageous populist promise",
+                "outcomes": [
+                    {
+                        "chance": 0.5,
+                        "description": "The crowd goes wild! Your promise dominated the news cycle.",
+                        "effects": [
+                            {
+                                "type": "political",
+                                "target": "approvalRating",
+                                "operation": "add",
+                                "value": 12
+                            },
+                            {
+                                "type": "stat",
+                                "target": "karma",
+                                "operation": "add",
+                                "value": -10
+                            }
+                        ]
+                    },
+                    {
+                        "chance": 0.5,
+                        "description": "Fact-checkers destroyed your claim. You look like a fraud.",
+                        "effects": [
+                            {
+                                "type": "political",
+                                "target": "approvalRating",
+                                "operation": "add",
+                                "value": -10
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "endorsement_offer",
+        "title": "High-Profile Endorsement",
+        "description": "A popular celebrity or major union has offered to publicly endorse your campaign.",
+        "icon": "⭐",
+        "category": "political",
+        "minAge": 21,
+        "maxAge": 80,
+        "weight": 50,
+        "unique": false,
+        "conditions": [
+            {
+                "type": "political",
+                "target": "campaignActive",
+                "operator": "eq",
+                "value": true
+            }
+        ],
+        "choices": [
+            {
+                "text": "Accept the endorsement gratefully",
+                "effects": [
+                    {
+                        "type": "political",
+                        "target": "approvalRating",
+                        "operation": "add",
+                        "value": 6
+                    },
+                    {
+                        "type": "political",
+                        "target": "campaignFunds",
+                        "operation": "add",
+                        "value": 20000
+                    }
+                ]
+            },
+            {
+                "text": "Politely decline to keep independence",
+                "effects": [
+                    {
+                        "type": "political",
+                        "target": "approvalRating",
+                        "operation": "add",
+                        "value": 2
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "smear_campaign",
+        "title": "Opponent Launches Smear Campaign",
+        "description": "Your opponent's campaign is running vicious attack ads accusing you of fraud.",
+        "icon": "📺",
+        "category": "political",
+        "minAge": 21,
+        "maxAge": 80,
+        "weight": 60,
+        "unique": false,
+        "conditions": [
+            {
+                "type": "political",
+                "target": "campaignActive",
+                "operator": "eq",
+                "value": true
+            }
+        ],
+        "choices": [
+            {
+                "text": "Launch counter-attack ads",
+                "outcomes": [
+                    {
+                        "chance": 0.55,
+                        "description": "Your response was devastating. Their numbers are falling.",
+                        "effects": [
+                            {
+                                "type": "political",
+                                "target": "approvalRating",
+                                "operation": "add",
+                                "value": 5
+                            }
+                        ]
+                    },
+                    {
+                        "chance": 0.45,
+                        "description": "The mudslinging hurt you both. Voters are disgusted.",
+                        "effects": [
+                            {
+                                "type": "political",
+                                "target": "approvalRating",
+                                "operation": "add",
+                                "value": -5
+                            },
+                            {
+                                "type": "stat",
+                                "target": "karma",
+                                "operation": "add",
+                                "value": -5
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "text": "Take the high road and ignore it",
+                "effects": [
+                    {
+                        "type": "political",
+                        "target": "approvalRating",
+                        "operation": "add",
+                        "value": -3
+                    },
+                    {
+                        "type": "stat",
+                        "target": "karma",
+                        "operation": "add",
+                        "value": 8
+                    }
+                ]
+            },
+            {
+                "text": "Expose dirt on your opponent",
+                "outcomes": [
+                    {
+                        "chance": 0.5,
+                        "description": "The revelation was explosive! Opponent's poll numbers collapse.",
+                        "effects": [
+                            {
+                                "type": "political",
+                                "target": "approvalRating",
+                                "operation": "add",
+                                "value": 10
+                            }
+                        ]
+                    },
+                    {
+                        "chance": 0.5,
+                        "description": "It backfired — voters think you're playing dirty.",
+                        "effects": [
+                            {
+                                "type": "political",
+                                "target": "approvalRating",
+                                "operation": "add",
+                                "value": -8
+                            },
+                            {
+                                "type": "stat",
+                                "target": "karma",
+                                "operation": "add",
+                                "value": -8
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "economic_crisis",
+        "title": "Economic Crisis",
+        "description": "A sudden recession hits. Unemployment is rising and the people look to you for answers.",
+        "icon": "📉",
+        "category": "political",
+        "minAge": 25,
+        "maxAge": 80,
+        "weight": 50,
+        "unique": false,
+        "conditions": [
+            {
+                "type": "political",
+                "target": "active",
+                "operator": "eq",
+                "value": true
+            }
+        ],
+        "choices": [
+            {
+                "text": "Stimulus spending — inject cash into the economy",
+                "effects": [
+                    {
+                        "type": "political",
+                        "target": "approvalRating",
+                        "operation": "add",
+                        "value": 5
+                    },
+                    {
+                        "type": "stat",
+                        "target": "karma",
+                        "operation": "add",
+                        "value": 5
+                    }
+                ]
+            },
+            {
+                "text": "Austerity — cut spending and balance the budget",
+                "effects": [
+                    {
+                        "type": "political",
+                        "target": "approvalRating",
+                        "operation": "add",
+                        "value": -8
+                    },
+                    {
+                        "type": "stat",
+                        "target": "karma",
+                        "operation": "add",
+                        "value": -3
+                    }
+                ]
+            },
+            {
+                "text": "Bail out the banks",
+                "effects": [
+                    {
+                        "type": "political",
+                        "target": "approvalRating",
+                        "operation": "add",
+                        "value": -12
+                    },
+                    {
+                        "type": "political",
+                        "target": "corruptionLevel",
+                        "operation": "add",
+                        "value": 5
+                    }
+                ],
+                "outcomes": [
+                    {
+                        "chance": 0.5,
+                        "description": "The economy stabilized, but the public is furious about the bailout.",
+                        "effects": [
+                            {
+                                "type": "political",
+                                "target": "approvalRating",
+                                "operation": "add",
+                                "value": -8
+                            }
+                        ]
+                    },
+                    {
+                        "chance": 0.5,
+                        "description": "Nothing stabilized. The recession deepens, and you're to blame.",
+                        "effects": [
+                            {
+                                "type": "political",
+                                "target": "approvalRating",
+                                "operation": "add",
+                                "value": -15
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "natural_disaster",
+        "title": "Natural Disaster Strikes",
+        "description": "A major earthquake/hurricane devastates a region under your jurisdiction. Emergency response is needed immediately.",
+        "icon": "🌊",
+        "category": "political",
+        "minAge": 25,
+        "maxAge": 80,
+        "weight": 45,
+        "unique": false,
+        "conditions": [
+            {
+                "type": "political",
+                "target": "active",
+                "operator": "eq",
+                "value": true
+            }
+        ],
+        "choices": [
+            {
+                "text": "Personally visit the disaster zone",
+                "outcomes": [
+                    {
+                        "chance": 0.7,
+                        "description": "Your presence rallied the relief effort. The people loved you for it.",
+                        "effects": [
+                            {
+                                "type": "political",
+                                "target": "approvalRating",
+                                "operation": "add",
+                                "value": 12
+                            },
+                            {
+                                "type": "stat",
+                                "target": "karma",
+                                "operation": "add",
+                                "value": 10
+                            }
+                        ]
+                    },
+                    {
+                        "chance": 0.3,
+                        "description": "The optics were bad — you looked more interested in photo ops than helping.",
+                        "effects": [
+                            {
+                                "type": "political",
+                                "target": "approvalRating",
+                                "operation": "add",
+                                "value": -8
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "text": "Delegate the response to FEMA/emergency agencies",
+                "effects": [
+                    {
+                        "type": "political",
+                        "target": "approvalRating",
+                        "operation": "add",
+                        "value": -3
+                    }
+                ]
+            },
+            {
+                "text": "Slow-walk the response while playing golf",
+                "effects": [
+                    {
+                        "type": "political",
+                        "target": "approvalRating",
+                        "operation": "add",
+                        "value": -20
+                    },
+                    {
+                        "type": "stat",
+                        "target": "karma",
+                        "operation": "add",
+                        "value": -15
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "assassination_attempt",
+        "title": "Assassination Attempt",
+        "description": "A gunman opened fire at a public event. You survived, but barely.",
+        "icon": "🔫",
+        "category": "political",
+        "minAge": 30,
+        "maxAge": 80,
+        "weight": 20,
+        "unique": true,
+        "conditions": [
+            {
+                "type": "political",
+                "target": "positionLevel",
+                "operator": "gte",
+                "value": 2
+            }
+        ],
+        "choices": [
+            {
+                "text": "Make a defiant public statement",
+                "effects": [
+                    {
+                        "type": "stat",
+                        "target": "health",
+                        "operation": "add",
+                        "value": -15
+                    },
+                    {
+                        "type": "political",
+                        "target": "approvalRating",
+                        "operation": "add",
+                        "value": 20
+                    },
+                    {
+                        "type": "political",
+                        "target": "influence",
+                        "operation": "add",
+                        "value": 10
+                    }
+                ]
+            },
+            {
+                "text": "Recover quietly out of public view",
+                "effects": [
+                    {
+                        "type": "stat",
+                        "target": "health",
+                        "operation": "add",
+                        "value": -15
+                    },
+                    {
+                        "type": "political",
+                        "target": "approvalRating",
+                        "operation": "add",
+                        "value": 8
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "consolidate_power",
+        "title": "Opportunity to Remove Term Limits",
+        "description": "Your allies in the legislature are ready to push through a constitutional amendment removing presidential term limits. This is your chance.",
+        "icon": "👑",
+        "category": "political",
+        "minAge": 35,
+        "maxAge": 80,
+        "weight": 40,
+        "unique": true,
+        "conditions": [
+            {
+                "type": "political",
+                "target": "positionLevel",
+                "operator": "gte",
+                "value": 4
+            },
+            {
+                "type": "political",
+                "target": "authoritarianScore",
+                "operator": "gte",
+                "value": 25
+            }
+        ],
+        "choices": [
+            {
+                "text": "Push through the amendment",
+                "effects": [
+                    {
+                        "type": "political",
+                        "target": "authoritarianScore",
+                        "operation": "add",
+                        "value": 25
+                    },
+                    {
+                        "type": "political",
+                        "target": "isTermLimited",
+                        "operation": "set",
+                        "value": false
+                    },
+                    {
+                        "type": "stat",
+                        "target": "karma",
+                        "operation": "add",
+                        "value": -20
+                    },
+                    {
+                        "type": "political",
+                        "target": "approvalRating",
+                        "operation": "add",
+                        "value": -15
+                    }
+                ]
+            },
+            {
+                "text": "Respect democratic norms and decline",
+                "effects": [
+                    {
+                        "type": "stat",
+                        "target": "karma",
+                        "operation": "add",
+                        "value": 15
+                    },
+                    {
+                        "type": "political",
+                        "target": "approvalRating",
+                        "operation": "add",
+                        "value": 8
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "revolution_brewing",
+        "title": "Revolution Is Brewing",
+        "description": "Mass protests have erupted in the capital. Millions are demanding your resignation. The opposition is organized and emboldened.",
+        "icon": "🔥",
+        "category": "political",
+        "minAge": 35,
+        "maxAge": 80,
+        "weight": 35,
+        "unique": false,
+        "conditions": [
+            {
+                "type": "political",
+                "target": "positionLevel",
+                "operator": "gte",
+                "value": 4
+            },
+            {
+                "type": "political",
+                "target": "authoritarianScore",
+                "operator": "gte",
+                "value": 50
+            },
+            {
+                "type": "political",
+                "target": "approvalRating",
+                "operator": "lte",
+                "value": 30
+            }
+        ],
+        "choices": [
+            {
+                "text": "Crack down with military force",
+                "outcomes": [
+                    {
+                        "chance": 0.5,
+                        "description": "The crackdown suppressed the uprising — for now.",
+                        "effects": [
+                            {
+                                "type": "political",
+                                "target": "oppositionStrength",
+                                "operation": "add",
+                                "value": -20
+                            },
+                            {
+                                "type": "political",
+                                "target": "authoritarianScore",
+                                "operation": "add",
+                                "value": 10
+                            },
+                            {
+                                "type": "stat",
+                                "target": "karma",
+                                "operation": "add",
+                                "value": -20
+                            }
+                        ]
+                    },
+                    {
+                        "chance": 0.5,
+                        "description": "The crackdown backfired — it's now an international crisis.",
+                        "effects": [
+                            {
+                                "type": "political",
+                                "target": "oppositionStrength",
+                                "operation": "add",
+                                "value": 15
+                            },
+                            {
+                                "type": "political",
+                                "target": "approvalRating",
+                                "operation": "add",
+                                "value": -15
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "text": "Negotiate with opposition leaders",
+                "effects": [
+                    {
+                        "type": "political",
+                        "target": "oppositionStrength",
+                        "operation": "add",
+                        "value": -10
+                    },
+                    {
+                        "type": "political",
+                        "target": "approvalRating",
+                        "operation": "add",
+                        "value": 10
+                    },
+                    {
+                        "type": "stat",
+                        "target": "karma",
+                        "operation": "add",
+                        "value": 10
+                    }
+                ]
+            },
+            {
+                "text": "Resign voluntarily",
+                "effects": [
+                    {
+                        "type": "political",
+                        "target": "active",
+                        "operation": "set",
+                        "value": false
+                    },
+                    {
+                        "type": "political",
+                        "target": "positionLevel",
+                        "operation": "set",
+                        "value": 0
+                    },
+                    {
+                        "type": "stat",
+                        "target": "karma",
+                        "operation": "add",
+                        "value": 20
+                    },
+                    {
+                        "type": "stat",
+                        "target": "happiness",
+                        "operation": "add",
+                        "value": -15
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "supreme_court_vacancy",
+        "title": "Supreme Court Vacancy",
+        "description": "A Supreme Court justice has retired. As president, you must nominate a replacement.",
+        "icon": "⚖️",
+        "category": "political",
+        "minAge": 35,
+        "maxAge": 80,
+        "weight": 40,
+        "unique": false,
+        "conditions": [
+            {
+                "type": "political",
+                "target": "positionLevel",
+                "operator": "gte",
+                "value": 4
+            }
+        ],
+        "choices": [
+            {
+                "text": "Appoint a progressive judge",
+                "effects": [
+                    {
+                        "type": "political",
+                        "target": "approvalRating",
+                        "operation": "add",
+                        "value": 5
+                    },
+                    {
+                        "type": "stat",
+                        "target": "karma",
+                        "operation": "add",
+                        "value": 5
+                    }
+                ]
+            },
+            {
+                "text": "Appoint a conservative judge",
+                "effects": [
+                    {
+                        "type": "political",
+                        "target": "approvalRating",
+                        "operation": "add",
+                        "value": 3
+                    }
+                ]
+            },
+            {
+                "text": "Appoint a loyal ally with no judicial record",
+                "effects": [
+                    {
+                        "type": "political",
+                        "target": "partyLoyalty",
+                        "operation": "add",
+                        "value": 10
+                    },
+                    {
+                        "type": "political",
+                        "target": "corruptionLevel",
+                        "operation": "add",
+                        "value": 10
+                    },
+                    {
+                        "type": "political",
+                        "target": "approvalRating",
+                        "operation": "add",
+                        "value": -8
+                    }
+                ]
+            }
+        ]
+    }
+]

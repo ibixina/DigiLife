@@ -1,0 +1,409 @@
+[
+    {
+        "id": "school_board",
+        "title": "School Board Member",
+        "level": 1,
+        "minAge": 18,
+        "requiredEducation": "High School",
+        "minSmarts": 40,
+        "minWillpower": 35,
+        "minPoliticalYears": 0,
+        "salary": 30000,
+        "termLength": 4,
+        "termLimit": 3,
+        "isElected": true,
+        "governmentTypes": [
+            "democracy",
+            "authoritarian"
+        ],
+        "filingFee": 250,
+        "baseCampaignCost": 5000,
+        "nextPositions": [
+            "city_council",
+            "county_commissioner"
+        ]
+    },
+    {
+        "id": "city_council",
+        "title": "City Council Member",
+        "level": 1,
+        "minAge": 21,
+        "requiredEducation": "High School",
+        "minSmarts": 45,
+        "minWillpower": 40,
+        "minPoliticalYears": 0,
+        "salary": 45000,
+        "termLength": 4,
+        "termLimit": 3,
+        "isElected": true,
+        "governmentTypes": [
+            "democracy",
+            "authoritarian"
+        ],
+        "filingFee": 500,
+        "baseCampaignCost": 10000,
+        "nextPositions": [
+            "mayor",
+            "state_representative",
+            "county_commissioner"
+        ]
+    },
+    {
+        "id": "county_commissioner",
+        "title": "County Commissioner",
+        "level": 1,
+        "minAge": 21,
+        "requiredEducation": "High School",
+        "minSmarts": 45,
+        "minWillpower": 40,
+        "minPoliticalYears": 0,
+        "salary": 50000,
+        "termLength": 4,
+        "termLimit": 3,
+        "isElected": true,
+        "governmentTypes": [
+            "democracy",
+            "authoritarian"
+        ],
+        "filingFee": 500,
+        "baseCampaignCost": 15000,
+        "nextPositions": [
+            "mayor",
+            "state_representative"
+        ]
+    },
+    {
+        "id": "mayor",
+        "title": "Mayor",
+        "level": 1,
+        "minAge": 25,
+        "requiredEducation": "High School",
+        "minSmarts": 50,
+        "minWillpower": 45,
+        "minPoliticalYears": 1,
+        "salary": 80000,
+        "termLength": 4,
+        "termLimit": 2,
+        "isElected": true,
+        "governmentTypes": [
+            "democracy",
+            "authoritarian"
+        ],
+        "filingFee": 2000,
+        "baseCampaignCost": 50000,
+        "nextPositions": [
+            "state_representative",
+            "state_senator",
+            "governor",
+            "us_representative"
+        ]
+    },
+    {
+        "id": "state_representative",
+        "title": "State Representative",
+        "level": 2,
+        "minAge": 25,
+        "requiredEducation": "High School",
+        "minSmarts": 55,
+        "minWillpower": 50,
+        "minPoliticalYears": 2,
+        "salary": 80000,
+        "termLength": 2,
+        "termLimit": 6,
+        "isElected": true,
+        "governmentTypes": [
+            "democracy",
+            "authoritarian"
+        ],
+        "filingFee": 3000,
+        "baseCampaignCost": 100000,
+        "nextPositions": [
+            "state_senator",
+            "us_representative",
+            "lt_governor"
+        ]
+    },
+    {
+        "id": "state_senator",
+        "title": "State Senator",
+        "level": 2,
+        "minAge": 30,
+        "requiredEducation": "Bachelor",
+        "minSmarts": 58,
+        "minWillpower": 52,
+        "minPoliticalYears": 3,
+        "salary": 95000,
+        "termLength": 4,
+        "termLimit": 3,
+        "isElected": true,
+        "governmentTypes": [
+            "democracy",
+            "authoritarian"
+        ],
+        "filingFee": 5000,
+        "baseCampaignCost": 250000,
+        "nextPositions": [
+            "lt_governor",
+            "attorney_general",
+            "governor",
+            "us_representative",
+            "us_senator"
+        ]
+    },
+    {
+        "id": "lt_governor",
+        "title": "Lieutenant Governor",
+        "level": 2,
+        "minAge": 30,
+        "requiredEducation": "Bachelor",
+        "minSmarts": 60,
+        "minWillpower": 55,
+        "minPoliticalYears": 4,
+        "salary": 130000,
+        "termLength": 4,
+        "termLimit": 2,
+        "isElected": true,
+        "governmentTypes": [
+            "democracy"
+        ],
+        "filingFee": 10000,
+        "baseCampaignCost": 500000,
+        "nextPositions": [
+            "governor",
+            "us_senator"
+        ]
+    },
+    {
+        "id": "attorney_general",
+        "title": "Attorney General",
+        "level": 2,
+        "minAge": 30,
+        "requiredEducation": "Doctorate",
+        "requiredMajor": "Law",
+        "requiredFlag": "license_bar",
+        "minSmarts": 65,
+        "minWillpower": 55,
+        "minPoliticalYears": 3,
+        "salary": 150000,
+        "termLength": 4,
+        "termLimit": 2,
+        "isElected": true,
+        "governmentTypes": [
+            "democracy",
+            "authoritarian"
+        ],
+        "filingFee": 10000,
+        "baseCampaignCost": 1000000,
+        "nextPositions": [
+            "governor",
+            "us_senator"
+        ]
+    },
+    {
+        "id": "governor",
+        "title": "Governor",
+        "level": 2,
+        "minAge": 30,
+        "requiredEducation": "Bachelor",
+        "minSmarts": 62,
+        "minWillpower": 58,
+        "minPoliticalYears": 5,
+        "salary": 175000,
+        "termLength": 4,
+        "termLimit": 2,
+        "isElected": true,
+        "governmentTypes": [
+            "democracy",
+            "authoritarian"
+        ],
+        "filingFee": 25000,
+        "baseCampaignCost": 5000000,
+        "nextPositions": [
+            "us_senator",
+            "president",
+            "vice_president"
+        ]
+    },
+    {
+        "id": "us_representative",
+        "title": "U.S. Representative",
+        "level": 3,
+        "minAge": 25,
+        "requiredEducation": "Bachelor",
+        "minSmarts": 60,
+        "minWillpower": 55,
+        "minPoliticalYears": 4,
+        "salary": 174000,
+        "termLength": 2,
+        "termLimit": 0,
+        "isElected": true,
+        "governmentTypes": [
+            "democracy"
+        ],
+        "filingFee": 10000,
+        "baseCampaignCost": 2000000,
+        "nextPositions": [
+            "us_senator",
+            "cabinet_secretary"
+        ]
+    },
+    {
+        "id": "us_senator",
+        "title": "U.S. Senator",
+        "level": 3,
+        "minAge": 30,
+        "requiredEducation": "Bachelor",
+        "minSmarts": 65,
+        "minWillpower": 60,
+        "minPoliticalYears": 6,
+        "salary": 174000,
+        "termLength": 6,
+        "termLimit": 0,
+        "isElected": true,
+        "governmentTypes": [
+            "democracy"
+        ],
+        "filingFee": 25000,
+        "baseCampaignCost": 10000000,
+        "nextPositions": [
+            "president",
+            "vice_president"
+        ]
+    },
+    {
+        "id": "cabinet_secretary",
+        "title": "Cabinet Secretary",
+        "level": 3,
+        "minAge": 30,
+        "requiredEducation": "Bachelor",
+        "minSmarts": 65,
+        "minWillpower": 58,
+        "minPoliticalYears": 5,
+        "salary": 210000,
+        "termLength": 4,
+        "termLimit": 0,
+        "isElected": false,
+        "governmentTypes": [
+            "democracy",
+            "authoritarian"
+        ],
+        "filingFee": 0,
+        "baseCampaignCost": 0,
+        "nextPositions": [
+            "president",
+            "vice_president"
+        ]
+    },
+    {
+        "id": "vice_president",
+        "title": "Vice President",
+        "level": 4,
+        "minAge": 35,
+        "requiredEducation": "Bachelor",
+        "minSmarts": 68,
+        "minWillpower": 62,
+        "minPoliticalYears": 8,
+        "salary": 235000,
+        "termLength": 4,
+        "termLimit": 2,
+        "isElected": false,
+        "governmentTypes": [
+            "democracy"
+        ],
+        "filingFee": 0,
+        "baseCampaignCost": 0,
+        "nextPositions": [
+            "president"
+        ]
+    },
+    {
+        "id": "president",
+        "title": "President",
+        "level": 4,
+        "minAge": 35,
+        "requiredEducation": "Bachelor",
+        "minSmarts": 70,
+        "minWillpower": 65,
+        "minPoliticalYears": 8,
+        "salary": 400000,
+        "termLength": 4,
+        "termLimit": 2,
+        "isElected": true,
+        "governmentTypes": [
+            "democracy",
+            "authoritarian"
+        ],
+        "filingFee": 50000,
+        "baseCampaignCost": 100000000,
+        "nextPositions": [
+            "president_for_life",
+            "supreme_leader",
+            "monarch"
+        ]
+    },
+    {
+        "id": "president_for_life",
+        "title": "President-for-Life",
+        "level": 5,
+        "minAge": 35,
+        "requiredEducation": "None",
+        "minSmarts": 0,
+        "minWillpower": 0,
+        "minPoliticalYears": 4,
+        "minAuthoritarianScore": 50,
+        "salary": 0,
+        "termLength": 0,
+        "termLimit": 0,
+        "isElected": false,
+        "governmentTypes": [
+            "authoritarian",
+            "dictatorship"
+        ],
+        "filingFee": 0,
+        "baseCampaignCost": 0,
+        "nextPositions": []
+    },
+    {
+        "id": "supreme_leader",
+        "title": "Supreme Leader",
+        "level": 5,
+        "minAge": 35,
+        "requiredEducation": "None",
+        "minSmarts": 0,
+        "minWillpower": 0,
+        "minPoliticalYears": 4,
+        "minAuthoritarianScore": 70,
+        "salary": 0,
+        "termLength": 0,
+        "termLimit": 0,
+        "isElected": false,
+        "governmentTypes": [
+            "dictatorship"
+        ],
+        "filingFee": 0,
+        "baseCampaignCost": 0,
+        "nextPositions": []
+    },
+    {
+        "id": "monarch",
+        "title": "Monarch",
+        "level": 5,
+        "minAge": 35,
+        "requiredEducation": "None",
+        "minSmarts": 0,
+        "minWillpower": 0,
+        "minPoliticalYears": 4,
+        "minAuthoritarianScore": 60,
+        "minMilitaryControl": 60,
+        "salary": 0,
+        "termLength": 0,
+        "termLimit": 0,
+        "isElected": false,
+        "governmentTypes": [
+            "monarchy"
+        ],
+        "filingFee": 0,
+        "baseCampaignCost": 0,
+        "nextPositions": []
+    }
+]

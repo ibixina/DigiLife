@@ -30,6 +30,19 @@ export function evaluateCondition(state: GameState, condition: Condition): boole
             if (condition.value === undefined) return false;
             return Math.random() <= condition.value;
         }
+        case 'political': {
+            if (!condition.target || !condition.operator) return false;
+            const pol = state.politics as Record<string, any>;
+            const targetVal = pol[condition.target];
+            if (condition.operator === 'has') return targetVal !== undefined && targetVal !== null && targetVal !== false;
+            if (condition.operator === 'not_has') return targetVal === undefined || targetVal === null || targetVal === false;
+            return compare(targetVal, condition.operator, condition.value);
+        }
+        case 'education': {
+            if (!condition.target || !condition.operator) return false;
+            const edu = state.education as Record<string, any>;
+            return compare(edu[condition.target], condition.operator, condition.value);
+        }
         default:
             console.warn(`Unknown condition type: ${condition.type}`);
             return true; // Default to true if unknown, so we don't break content completely

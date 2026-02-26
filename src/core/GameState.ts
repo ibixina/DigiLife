@@ -4,7 +4,7 @@ export type Gender = 'Male' | 'Female' | 'Non-binary';
 export interface Relationship {
   id: string;
   name: string;
-  type: 'Father' | 'Mother' | 'Brother' | 'Sister' | 'Friend' | 'Enemy' | 'Pet' | 'Partner' | 'Child' | 'Co-worker' | 'Boss' | 'Teacher' | 'Classmate';
+  type: 'Father' | 'Mother' | 'Brother' | 'Sister' | 'Friend' | 'Enemy' | 'Pet' | 'Partner' | 'Child' | 'Co-worker' | 'Boss' | 'Teacher' | 'Classmate' | 'Political Ally' | 'Political Rival' | 'Lobbyist' | 'Campaign Manager' | 'Party Leader';
   gender: Gender | 'Unknown';
   age: number;
   health: number;
@@ -125,6 +125,66 @@ export interface WrestlingContractState {
   rivalOffer: WrestlingContractOffer | null;
 }
 
+export interface PoliticalState {
+  active: boolean;
+  currentPosition: string | null;       // e.g. 'city_council', 'governor', 'president'
+  positionTitle: string | null;          // Display title
+  positionLevel: number;                 // 0=none, 1=local, 2=state, 3=national, 4=head of state, 5=supreme
+  yearsInOffice: number;
+  termsServed: number;
+  totalPoliticalYears: number;
+
+  // Core political stats (0-100)
+  approvalRating: number;
+  influence: number;                     // Political capital / clout
+  campaignFunds: number;                 // Cash reserved for campaigns (separate from personal cash)
+  partyLoyalty: number;                  // Standing within your party
+
+  // Political identity
+  party: string | null;                  // e.g. 'Progressive', 'Conservative', 'Independent'
+  ideology: string | null;              // e.g. 'populist', 'moderate', 'radical'
+
+  // Governance track
+  policiesEnacted: string[];            // IDs of enacted policies
+  legislativeRecord: number;            // Bills passed / supported
+  vetoes: number;
+
+  // Dark side
+  corruptionLevel: number;              // 0-100, hidden accumulation
+  scandalsExposed: number;
+  underInvestigation: boolean;
+  impeachmentRisk: number;              // 0-100
+
+  // Authoritarian track
+  authoritarianScore: number;           // 0-100, accumulated from authoritarian actions
+  militaryControl: number;              // 0-100, control over armed forces
+  mediaControl: number;                 // 0-100, control over press / propaganda
+  oppositionStrength: number;           // 0-100, how strong the opposition is
+  governmentType: string;               // 'democracy' | 'authoritarian' | 'dictatorship' | 'monarchy' | 'theocracy'
+  dynastyEstablished: boolean;
+
+  // Campaign state (active during election cycles)
+  campaignActive: boolean;
+  targetPosition: string | null;
+  campaignBudget: number;
+  endorsements: string[];               // IDs of endorsing NPCs/orgs
+  debatesWon: number;
+  ralliesHeld: number;
+
+  // Relationships (political)
+  allies: string[];                     // NPC IDs
+  rivals: string[];                     // NPC IDs
+  lobbyists: string[];                  // NPC IDs
+
+  // Flags
+  hasRunForOffice: boolean;
+  hasLostElection: boolean;
+  hasBeenImpeached: boolean;
+  hasStagedCoup: boolean;
+  hasDeclaredMartialLaw: boolean;
+  isTermLimited: boolean;
+}
+
 export interface GameState {
   version: string;
   character: Character;
@@ -145,6 +205,53 @@ export interface GameState {
   locationTime: number;
   currentLocation: string;
   activitiesExperience: Record<string, number>;
+  politics: PoliticalState;
+}
+
+export function createDefaultPoliticalState(): PoliticalState {
+  return {
+    active: false,
+    currentPosition: null,
+    positionTitle: null,
+    positionLevel: 0,
+    yearsInOffice: 0,
+    termsServed: 0,
+    totalPoliticalYears: 0,
+    approvalRating: 50,
+    influence: 0,
+    campaignFunds: 0,
+    partyLoyalty: 50,
+    party: null,
+    ideology: null,
+    policiesEnacted: [],
+    legislativeRecord: 0,
+    vetoes: 0,
+    corruptionLevel: 0,
+    scandalsExposed: 0,
+    underInvestigation: false,
+    impeachmentRisk: 0,
+    authoritarianScore: 0,
+    militaryControl: 0,
+    mediaControl: 0,
+    oppositionStrength: 50,
+    governmentType: 'democracy',
+    dynastyEstablished: false,
+    campaignActive: false,
+    targetPosition: null,
+    campaignBudget: 0,
+    endorsements: [],
+    debatesWon: 0,
+    ralliesHeld: 0,
+    allies: [],
+    rivals: [],
+    lobbyists: [],
+    hasRunForOffice: false,
+    hasLostElection: false,
+    hasBeenImpeached: false,
+    hasStagedCoup: false,
+    hasDeclaredMartialLaw: false,
+    isTermLimited: false,
+  };
 }
 
 export function createInitialState(): GameState {
@@ -219,5 +326,6 @@ export function createInitialState(): GameState {
     locationTime: 10,
     currentLocation: 'Home',
     activitiesExperience: {},
+    politics: createDefaultPoliticalState(),
   };
 }

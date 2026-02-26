@@ -7,6 +7,8 @@ import { applyEffects } from './EffectSystem';
 import { initializeFamily, ageUpNPCs } from '../systems/RelationshipSystem';
 import { processEducationYear } from '../systems/EducationSystem';
 import { processCareerYear, processSerialKillerYear } from '../systems/CareerSystem';
+import { processPoliticalYear } from '../systems/PoliticalSystem';
+import { createDefaultPoliticalState } from './GameState';
 import { events } from './EventBus';
 
 export class Engine {
@@ -81,6 +83,17 @@ export class Engine {
         if (this.state.wrestlingContract === undefined) {
             this.state.wrestlingContract = null;
         }
+        if (!this.state.politics) {
+            this.state.politics = createDefaultPoliticalState();
+        } else {
+            // Ensure all politics fields exist for older saves
+            const defaults = createDefaultPoliticalState();
+            const pol = this.state.politics as Record<string, any>;
+            const def = defaults as Record<string, any>;
+            for (const key of Object.keys(def)) {
+                if (pol[key] === undefined) pol[key] = def[key];
+            }
+        }
     }
 
     startNewLife(firstName: string, lastName: string, gender: 'Male' | 'Female' | 'Non-binary', country: string) {
@@ -144,6 +157,7 @@ export class Engine {
         processEducationYear(this.state);
         processCareerYear(this.state);
         processSerialKillerYear(this.state);
+        processPoliticalYear(this.state);
         ageUpNPCs(this.state);
 
         // Passive heal/decay based on happiness & health

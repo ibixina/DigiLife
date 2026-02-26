@@ -1,0 +1,240 @@
+[
+    {
+        "id": "bribery_scandal",
+        "title": "Bribery Scandal",
+        "description": "Evidence surfaces that you accepted cash payments from a construction company in exchange for a city contract.",
+        "severity": "major",
+        "approvalHit": -20,
+        "corruptionThreshold": 25,
+        "choices": [
+            {
+                "text": "Deny everything",
+                "successChance": 0.3,
+                "successApproval": 0,
+                "failApproval": -15,
+                "corruptionGain": 8,
+                "karmaHit": -5
+            },
+            {
+                "text": "Confess and apologize",
+                "approvalHit": -10,
+                "corruptionGain": 0,
+                "karmaGain": 5
+            },
+            {
+                "text": "Blame your chief of staff",
+                "successChance": 0.4,
+                "successApproval": 0,
+                "failApproval": -20,
+                "karmaHit": -15,
+                "corruptionGain": 5
+            }
+        ]
+    },
+    {
+        "id": "affair_scandal",
+        "title": "Affair Exposed",
+        "description": "A tabloid breaks news of your romantic affair with a campaign staffer.",
+        "severity": "moderate",
+        "approvalHit": -15,
+        "corruptionThreshold": 0,
+        "choices": [
+            {
+                "text": "Deny and attack the reporters",
+                "successChance": 0.25,
+                "successApproval": 0,
+                "failApproval": -20,
+                "karmaHit": -10,
+                "corruptionGain": 3
+            },
+            {
+                "text": "Admit it and ask for privacy",
+                "approvalHit": -8,
+                "karmaGain": 3
+            },
+            {
+                "text": "Hold a press conference with your family",
+                "successChance": 0.5,
+                "successApproval": 5,
+                "failApproval": -15,
+                "karmaHit": -5
+            }
+        ]
+    },
+    {
+        "id": "tax_evasion_scandal",
+        "title": "Tax Evasion Discovery",
+        "description": "Leaked tax documents reveal you failed to report millions in offshore accounts.",
+        "severity": "major",
+        "approvalHit": -25,
+        "corruptionThreshold": 20,
+        "choices": [
+            {
+                "text": "Claim it was an accounting error",
+                "successChance": 0.4,
+                "successApproval": 0,
+                "failApproval": -20,
+                "corruptionGain": 5
+            },
+            {
+                "text": "Pay back-taxes and apologize publicly",
+                "approvalHit": -12,
+                "karmaGain": 8,
+                "corruptionGain": 0
+            },
+            {
+                "text": "Blame political opponents for a smear",
+                "successChance": 0.3,
+                "successApproval": 5,
+                "failApproval": -25,
+                "karmaHit": -12
+            }
+        ]
+    },
+    {
+        "id": "insider_trading_scandal",
+        "title": "Insider Trading Accusation",
+        "description": "The SEC announces it is investigating stock trades you made one day before a major government announcement.",
+        "severity": "major",
+        "approvalHit": -22,
+        "corruptionThreshold": 15,
+        "choices": [
+            {
+                "text": "Claim coincidence and stay silent",
+                "successChance": 0.35,
+                "successApproval": 0,
+                "failApproval": -18,
+                "corruptionGain": 6
+            },
+            {
+                "text": "Voluntarily disclose all trades",
+                "approvalHit": -10,
+                "karmaGain": 10
+            },
+            {
+                "text": "Fire the aide who tipped you off",
+                "successChance": 0.5,
+                "successApproval": 3,
+                "failApproval": -20,
+                "karmaHit": -10
+            }
+        ]
+    },
+    {
+        "id": "nepotism_scandal",
+        "title": "Nepotism Accusation",
+        "description": "Critics reveal that you appointed your brother-in-law to a senior government position without a competitive search.",
+        "severity": "minor",
+        "approvalHit": -10,
+        "corruptionThreshold": 10,
+        "choices": [
+            {
+                "text": "Defend the appointment as merit-based",
+                "successChance": 0.45,
+                "successApproval": 2,
+                "failApproval": -10,
+                "corruptionGain": 3
+            },
+            {
+                "text": "Remove the relative from the position",
+                "approvalHit": -5,
+                "karmaGain": 5
+            },
+            {
+                "text": "Ignore the controversy",
+                "approvalHit": -8,
+                "corruptionGain": 4,
+                "karmaHit": -3
+            }
+        ]
+    },
+    {
+        "id": "abuse_of_power_scandal",
+        "title": "Abuse of Power Allegation",
+        "description": "A whistleblower claims you used government resources to investigate a political rival.",
+        "severity": "critical",
+        "approvalHit": -30,
+        "corruptionThreshold": 35,
+        "triggersImpeachment": true,
+        "choices": [
+            {
+                "text": "Stonewall the investigation",
+                "successChance": 0.25,
+                "successApproval": 0,
+                "failApproval": -25,
+                "corruptionGain": 15,
+                "karmaHit": -15
+            },
+            {
+                "text": "Cooperate fully with investigators",
+                "approvalHit": -15,
+                "karmaGain": 12
+            },
+            {
+                "text": "Pardon everyone involved",
+                "approvalHit": -20,
+                "corruptionGain": 10,
+                "authoritarianGain": 10,
+                "karmaHit": -20
+            }
+        ]
+    },
+    {
+        "id": "leaked_comms_scandal",
+        "title": "Leaked Communications",
+        "description": "Private messages surface showing you made crude and offensive remarks about minority groups.",
+        "severity": "moderate",
+        "approvalHit": -18,
+        "corruptionThreshold": 0,
+        "choices": [
+            {
+                "text": "Apologize sincerely",
+                "approvalHit": -8,
+                "karmaGain": 6
+            },
+            {
+                "text": "Claim the messages are fabricated",
+                "successChance": 0.3,
+                "successApproval": 0,
+                "failApproval": -22,
+                "karmaHit": -10
+            },
+            {
+                "text": "Double down and fire the leaker",
+                "approvalHit": -15,
+                "authoritarianGain": 5,
+                "karmaHit": -8
+            }
+        ]
+    },
+    {
+        "id": "campaign_finance_scandal",
+        "title": "Illegal Campaign Finance",
+        "description": "The FEC discovers your campaign accepted illegal foreign donations routed through shell companies.",
+        "severity": "major",
+        "approvalHit": -22,
+        "corruptionThreshold": 20,
+        "choices": [
+            {
+                "text": "Return the donations and cooperate",
+                "approvalHit": -12,
+                "karmaGain": 8
+            },
+            {
+                "text": "Claim your campaign manager acted alone",
+                "successChance": 0.4,
+                "successApproval": 0,
+                "failApproval": -20,
+                "karmaHit": -12,
+                "corruptionGain": 8
+            },
+            {
+                "text": "Fight the investigation vigorously",
+                "successChance": 0.3,
+                "successApproval": 5,
+                "failApproval": -28,
+                "corruptionGain": 12
+            }
+        ]
+    }
+]
