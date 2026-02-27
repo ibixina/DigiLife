@@ -79,6 +79,24 @@ function isWrestlingCareer(state: GameState): boolean {
   return state.career.field === 'Wrestling';
 }
 
+function getCareerActionLocation(actionId: string, state: GameState): string | null {
+  if (actionId.startsWith('apply_')) return null;
+  if (actionId.startsWith('wrestling_')) return 'Arena';
+  if (actionId.startsWith('serial_') || actionId === 'unlock_serial_path') return null;
+
+  const field = state.career.field;
+  if (!field) return null;
+  if (field === 'Wrestling') return 'Arena';
+  if (field === 'Law') return 'Court';
+  if (field === 'Politics') return 'Office';
+  return 'Office';
+}
+
+function meetsCareerLocation(state: GameState, actionId: string): boolean {
+  const requiredLocation = getCareerActionLocation(actionId, state);
+  return !requiredLocation || state.currentLocation === requiredLocation;
+}
+
 function getWrestlingStyleRiskMultiplier(state: GameState): number {
   const specialization = (state.career.specialization || '').toLowerCase();
   if (specialization.includes('deathmatch') || specialization.includes('hardcore')) return 1.8;
@@ -1095,14 +1113,18 @@ export function getCareerApplyActions(state: GameState): CareerAction[] {
 }
 
 export function getAvailableCareerActions(state: GameState): CareerAction[] {
-  const baseActions = CAREER_ACTIONS.filter(action => action.isAvailable(state) && hasTimeForAction(state, action.timeCost));
-  const applyActions = getCareerApplyActions(state);
+  const baseActions = CAREER_ACTIONS.filter(action =>
+    action.isAvailable(state) &&
+    hasTimeForAction(state, action.timeCost) &&
+    meetsCareerLocation(state, action.id)
+  );
+  const applyActions = getCareerApplyActions(state).filter(action => meetsCareerLocation(state, action.id));
   return [...baseActions, ...applyActions].filter(action => hasTimeForAction(state, action.timeCost));
 }
 
 export function performCareerAction(state: GameState, actionId: string) {
   const allActions = getAvailableCareerActions(state);
   const action = allActions.find(a => a.id === actionId);
-  if (!action || !action.isAvailable(state)) return;
+  if (!action || !action.isAvailable(state) || !meetsCareerLocation(state, actionId)) return;
   action.perform(state);
 }

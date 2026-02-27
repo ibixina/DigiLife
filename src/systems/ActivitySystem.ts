@@ -110,6 +110,20 @@ export const ACTIVITIES: Record<string, ActivityDef> = {
             }
         }
     },
+    'Go to Court': {
+        id: 'Go to Court', name: 'Go to Court', minAge: 18, cost: 0, timeCost: 1, isTravel: true, travelTo: 'Court', locationTimeGranted: 8,
+        isAvailable: (state) => state.career.field === 'Law',
+        perform: (state) => {
+            state.history.push({ age: state.age, year: state.year, text: 'You went to the courthouse for legal work.', type: 'secondary' });
+        }
+    },
+    'Go to Office': {
+        id: 'Go to Office', name: 'Go to Office', minAge: 18, cost: 0, timeCost: 1, isTravel: true, travelTo: 'Office', locationTimeGranted: 8,
+        isAvailable: (state) => !!state.career.field && state.career.field !== 'Wrestling' && state.career.field !== 'Law',
+        perform: (state) => {
+            state.history.push({ age: state.age, year: state.year, text: 'You went to the office for work.', type: 'secondary' });
+        }
+    },
 
     // LOCAL ACTIVITIES
     'Walk': {

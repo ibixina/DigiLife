@@ -176,6 +176,20 @@
     margin-bottom: 0.5rem;
 }
 
+.menu-section-title {
+    margin-top: 0.75rem;
+    padding-bottom: 0.25rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    border-bottom: 1px dashed var(--border-color);
+}
+
+.menu-section-title:first-child {
+    margin-top: 0;
+}
+
 .menu-modal .choices-container {
     margin-top: 0;
     padding-bottom: 0;

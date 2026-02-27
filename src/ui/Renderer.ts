@@ -3,7 +3,7 @@ import { events } from '../core/EventBus';
 import { performActivity, getAvailableActivities } from '../systems/ActivitySystem';
 import { interactWithNPC, getAvailableInteractions, getVisibleRelationships } from '../systems/RelationshipSystem';
 import { getAvailableEducationActions, performEducationAction } from '../systems/EducationSystem';
-import { getAvailableCareerActions, performCareerAction } from '../systems/CareerSystem';
+import { getAllCareers, getAvailableCareerActions, performCareerAction } from '../systems/CareerSystem';
 
 export class Renderer {
   private el: HTMLElement;
@@ -401,10 +401,14 @@ export class Renderer {
     modal.appendChild(title);
     modal.appendChild(status);
 
+    const newlySeenInMenu = new Set<string>();
     actions.forEach(act => {
       const btn = document.createElement('button');
       btn.className = 'choice-card';
-      if (!this.seenActivityKeys.has(act.id)) btn.classList.add('is-new');
+      if (!this.seenActivityKeys.has(act.id)) {
+        btn.classList.add('is-new');
+        newlySeenInMenu.add(act.id);
+      }
       const costLabel = engine.state.currentLocation === 'Home' && !act.isTravel ? 'Months' : 'Time';
       btn.innerText = `${act.name} (-${act.timeCost} ${costLabel})`;
       btn.onclick = () => {
@@ -417,6 +421,9 @@ export class Renderer {
       }
       choicesContainer.appendChild(btn);
     });
+
+    newlySeenInMenu.forEach(actionId => this.seenActivityKeys.add(actionId));
+    this.checkNewActions();
 
     const closeBtn = document.createElement('button');
     closeBtn.className = 'choice-card text-muted';
@@ -517,42 +524,91 @@ export class Renderer {
     const educationActions = getAvailableEducationActions(engine.state);
     const careerActions = getAvailableCareerActions(engine.state);
     const allActions = [...educationActions, ...careerActions];
+    const careerCatalog = getAllCareers();
+    const careerFieldById = new Map(careerCatalog.map(career => [career.id, career.field]));
+    const newlySeenInMenu = new Set<string>();
+    const costLabel = engine.state.currentLocation === 'Home' ? 'Months' : 'Time';
+
+    const categoryIcons: Record<string, string> = {
+      Education: '📘',
+      Wrestling: '🤼',
+      Law: '⚖️',
+      Engineering: '🧰',
+      Politics: '🏛️',
+      Shadow: '🕵️',
+      Career: '💼'
+    };
+
+    const resolveCareerCategory = (actionId: string): string => {
+      if (actionId.startsWith('apply_')) {
+        const careerId = actionId.slice('apply_'.length);
+        return careerFieldById.get(careerId) || 'Career';
+      }
+      if (actionId.startsWith('wrestling_')) return 'Wrestling';
+      if (actionId.startsWith('serial_') || actionId === 'unlock_serial_path') return 'Shadow';
+      if (actionId === 'start_engineering_startup') return 'Engineering';
+      if (actionId === 'work_hard' || actionId === 'resign_job') {
+        return engine.state.career.field || 'Career';
+      }
+      if (actionId.startsWith('political_')) return 'Politics';
+      return 'Career';
+    };
+
+    const sections = new Map<string, { action: any; kind: 'education' | 'career' }[]>();
+    const addSectionAction = (section: string, action: any, kind: 'education' | 'career') => {
+      if (!sections.has(section)) sections.set(section, []);
+      sections.get(section)!.push({ action, kind });
+    };
+
+    educationActions.forEach(action => addSectionAction('Education', action, 'education'));
+    careerActions.forEach(action => addSectionAction(resolveCareerCategory(action.id), action, 'career'));
 
     if (allActions.length === 0) {
       const p = document.createElement('p');
       p.innerText = 'No education/career actions available right now.';
       choicesContainer.appendChild(p);
+    } else {
+      const sectionOrder = ['Education', 'Wrestling', 'Law', 'Engineering', 'Politics', 'Career', 'Shadow'];
+      const remainingSections = Array.from(sections.keys()).filter(s => !sectionOrder.includes(s)).sort();
+      const orderedSections = [...sectionOrder, ...remainingSections];
+
+      orderedSections.forEach(section => {
+        const entries = sections.get(section);
+        if (!entries || entries.length === 0) return;
+
+        const title = document.createElement('div');
+        title.className = 'menu-section-title';
+        title.innerText = section;
+        choicesContainer.appendChild(title);
+
+        entries.forEach(entry => {
+          const btn = document.createElement('button');
+          btn.className = 'choice-card';
+          if (!this.seenCareerKeys.has(entry.action.id)) {
+            btn.classList.add('is-new');
+            newlySeenInMenu.add(entry.action.id);
+          }
+
+          const icon = categoryIcons[section] || (entry.kind === 'education' ? '📘' : '💼');
+          btn.innerText = `${icon} ${entry.action.name} (-${entry.action.timeCost} ${costLabel})`;
+          btn.onclick = () => {
+            if (entry.kind === 'education') {
+              performEducationAction(engine.state, entry.action.id);
+            } else {
+              performCareerAction(engine.state, entry.action.id);
+            }
+            this.seenCareerKeys.add(entry.action.id);
+            this.closeOverlay();
+            this.render();
+            this.renderCareerMenu();
+          };
+          choicesContainer.appendChild(btn);
+        });
+      });
     }
 
-    educationActions.forEach(action => {
-      const btn = document.createElement('button');
-      btn.className = 'choice-card';
-      if (!this.seenCareerKeys.has(action.id)) btn.classList.add('is-new');
-      btn.innerText = `📘 ${action.name} (-${action.timeCost} Time)`;
-      btn.onclick = () => {
-        performEducationAction(engine.state, action.id);
-        this.seenCareerKeys.add(action.id);
-        this.closeOverlay();
-        this.render();
-        this.renderCareerMenu();
-      };
-      choicesContainer.appendChild(btn);
-    });
-
-    careerActions.forEach(action => {
-      const btn = document.createElement('button');
-      btn.className = 'choice-card';
-      if (!this.seenCareerKeys.has(action.id)) btn.classList.add('is-new');
-      btn.innerText = `💼 ${action.name} (-${action.timeCost} Time)`;
-      btn.onclick = () => {
-        performCareerAction(engine.state, action.id);
-        this.seenCareerKeys.add(action.id);
-        this.closeOverlay();
-        this.render();
-        this.renderCareerMenu();
-      };
-      choicesContainer.appendChild(btn);
-    });
+    newlySeenInMenu.forEach(actionId => this.seenCareerKeys.add(actionId));
+    this.checkNewActions();
 
     const closeBtn = document.createElement('button');
     closeBtn.className = 'choice-card text-muted';

@@ -2,8 +2,11 @@
 #app {
     display: flex;
     flex-direction: column;
+    width: 100%;
+    max-width: 640px;
     height: 100vh;
-    max-width: 600px;
+    height: 100dvh;
+    min-height: 100vh;
     margin: 0 auto;
     border-left: var(--border-width) var(--border-style) var(--border-color);
     border-right: var(--border-width) var(--border-style) var(--border-color);
@@ -49,6 +52,7 @@ header.top-bar {
 
 main.content-area {
     flex-grow: 1;
+    min-height: 0;
     overflow-y: auto;
     padding: 1rem;
     display: flex;
