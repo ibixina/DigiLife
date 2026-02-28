@@ -25,6 +25,11 @@ function makeAdultState(): GameState {
   return state;
 }
 
+function travelTo(state: GameState, location: string): void {
+  state.currentLocation = location;
+  state.locationTime = 10;
+}
+
 test('Education progression sets school levels at milestone ages', () => {
   const state = createInitialState();
 
@@ -377,9 +382,13 @@ test('Wrestling actions expose alignment and momentum mechanics', () => {
   });
 
   equal(state.career.field, 'Wrestling', 'Should start wrestling career');
+  
+  // Travel to Arena to see wrestling actions
+  travelTo(state, 'Arena');
   includes(careerActionIds(state), 'wrestling_turn_heel', 'Wrestling role should include heel/face actions');
 
   state.timeBudget = 12;
+  travelTo(state, 'Arena');
   performCareerAction(state, 'wrestling_turn_heel');
   equal(state.flags.wrestling_alignment, 'heel', 'Turn heel action should set alignment');
 });
@@ -431,7 +440,9 @@ test('Retiring from in-ring role unlocks backstage wrestling path', () => {
   });
   assert(!!state.career.id, 'Should start in-ring career');
 
+  // Travel to Arena to see wrestling actions
   state.timeBudget = 12;
+  travelTo(state, 'Arena');
   performCareerAction(state, 'wrestling_retire');
   equal(state.career.id, null, 'Retirement should clear in-ring role');
   equal(state.flags.wrestling_retired, true, 'Retirement should set retired flag');
@@ -469,7 +480,9 @@ test('House show loop can trigger wrestling injury years', () => {
     performCareerAction(state, 'apply_test_wrestler_injury');
   });
 
+  // Travel to Arena to see wrestling actions
   state.timeBudget = 12;
+  travelTo(state, 'Arena');
   withMockedRandom([0.0], () => {
     performCareerAction(state, 'wrestling_work_house_show');
   });
@@ -505,7 +518,10 @@ test('Backstage producer action boosts momentum and pays bonus', () => {
 
   const beforeMomentum = state.flags.wrestling_momentum || 0;
   const beforeCash = state.finances.cash;
+  
+  // Travel to Arena to see wrestling actions
   state.timeBudget = 12;
+  travelTo(state, 'Arena');
 
   withMockedRandom([0.1, 0.0], () => {
     performCareerAction(state, 'wrestling_backstage_produce_match');
@@ -572,9 +588,13 @@ test('Career actions are filtered out when no time remains', () => {
   });
   assert(!!state.career.id, 'Should be employed for work action checks');
 
-  state.timeBudget = 2;
+  // Travel to Office location for work actions
+  travelTo(state, 'Office');
+  
+  // At Office, we use locationTime not timeBudget
+  state.locationTime = 2;
   notIncludes(careerActionIds(state), 'work_hard', 'Work Hard should be hidden without enough time');
 
-  state.timeBudget = 3;
-  includes(careerActionIds(state), 'work_hard', 'Work Hard should appear when enough time exists');
+  state.locationTime = 3;
+  includes(careerActionIds(state), 'work_hard', 'Work Hard should appear when enough time exists at Office');
 });

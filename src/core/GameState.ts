@@ -49,6 +49,8 @@ export interface Stats {
   fertility: number;
 }
 
+export type StatName = keyof Stats;
+
 export interface FinanceState {
   cash: number;
   salary: number;

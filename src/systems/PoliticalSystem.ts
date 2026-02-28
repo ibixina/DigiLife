@@ -5,6 +5,7 @@
 
 import type { GameState } from '../core/GameState';
 import { events } from '../core/EventBus';
+import { spendTime, canSpendTime, addHistory, clamp } from '../core/StateUtils';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -576,11 +577,14 @@ export const PRE_OFFICE_ACTIONS: PoliticalActivityAction[] = [
         minAge: 16,
         available: (s) => s.age >= 16 && !s.politics.party,
         perform: (s) => {
+            if (!spendTime(s, 1)) return { success: false, message: 'Not enough time.' };
             const parties = ['progressive', 'conservative', 'centrist', 'libertarian'];
             s.politics.party = parties[Math.floor(Math.random() * parties.length)];
             s.politics.partyLoyalty = 50;
-            s.politics.totalPoliticalYears += 0; // No political year granted, just affiliation
-            return { success: true, message: `You joined the ${s.politics.party} party!` };
+            s.politics.totalPoliticalYears += 0;
+            const msg = `You joined the ${s.politics.party} party!`;
+            addHistory(s, msg, 'primary');
+            return { success: true, message: msg };
         }
     },
     {
@@ -591,9 +595,12 @@ export const PRE_OFFICE_ACTIONS: PoliticalActivityAction[] = [
         minAge: 18,
         available: (s) => s.age >= 18 && !s.politics.party,
         perform: (s) => {
+            if (!spendTime(s, 1)) return { success: false, message: 'Not enough time.' };
             s.politics.party = 'independent';
             s.politics.ideology = 'independent';
-            return { success: true, message: 'You will run as an independent candidate.' };
+            const msg = 'You registered as an independent candidate.';
+            addHistory(s, msg, 'primary');
+            return { success: true, message: msg };
         }
     },
     {
@@ -604,9 +611,12 @@ export const PRE_OFFICE_ACTIONS: PoliticalActivityAction[] = [
         minAge: 16,
         available: (s) => s.age >= 16,
         perform: (s) => {
+            if (!spendTime(s, 2)) return { success: false, message: 'Not enough time.' };
             s.politics.totalPoliticalYears += 1;
-            s.politics.influence = Math.min(100, s.politics.influence + 3);
-            return { success: true, message: 'Campaign volunteering complete. Political experience +1 year.' };
+            s.politics.influence = clamp(s.politics.influence + 3);
+            const msg = 'You volunteered for a political campaign. Experience +1 year.';
+            addHistory(s, msg);
+            return { success: true, message: msg };
         }
     },
     {
@@ -617,10 +627,13 @@ export const PRE_OFFICE_ACTIONS: PoliticalActivityAction[] = [
         minAge: 16,
         available: (s) => s.age >= 16 && s.age <= 25,
         perform: (s) => {
+            if (!spendTime(s, 3)) return { success: false, message: 'Not enough time.' };
             s.politics.totalPoliticalYears += 1;
-            s.politics.influence = Math.min(100, s.politics.influence + 5);
-            s.stats.smarts = Math.min(100, s.stats.smarts + 2);
-            return { success: true, message: 'Internship completed. Political years +1, Influence +5.' };
+            s.politics.influence = clamp(s.politics.influence + 5);
+            s.stats.smarts = clamp(s.stats.smarts + 2);
+            const msg = 'You interned at City Hall. Political experience +1 year.';
+            addHistory(s, msg);
+            return { success: true, message: msg };
         }
     },
     {
@@ -631,10 +644,13 @@ export const PRE_OFFICE_ACTIONS: PoliticalActivityAction[] = [
         minAge: 18,
         available: (s) => s.age >= 18,
         perform: (s) => {
+            if (!spendTime(s, 2)) return { success: false, message: 'Not enough time.' };
             s.politics.totalPoliticalYears += 1;
-            s.politics.influence = Math.min(100, s.politics.influence + 4);
-            s.stats.karma = Math.min(100, s.stats.karma + 5);
-            return { success: true, message: 'The community responded well. Influence +4, Karma +5.' };
+            s.politics.influence = clamp(s.politics.influence + 4);
+            s.stats.karma = clamp(s.stats.karma + 5);
+            const msg = 'You organized your community. Influence +4, Karma +5.';
+            addHistory(s, msg);
+            return { success: true, message: msg };
         }
     },
 ];
@@ -657,6 +673,94 @@ export function getAvailablePoliticalActions(state: GameState): (GovernanceActio
             if (action.available(state)) {
                 actions.push(action);
             }
+        }
+        
+        // Candidacy actions for eligible positions
+        if (!state.politics.campaignActive) {
+            const eligiblePositions = getEligiblePositions(state);
+            for (const pos of eligiblePositions) {
+                actions.push({
+                    id: `declare_candidacy_${pos.id}`,
+                    label: `Run for ${pos.title}`,
+                    description: `File candidacy for ${pos.title}. Filing fee: $${pos.filingFee.toLocaleString()}`,
+                    timeCost: 1,
+                    available: (s) => 
+                        !s.politics.campaignActive && 
+                        isEligibleForPosition(s, pos) &&
+                        s.finances.cash >= pos.filingFee &&
+                        canSpendTime(s, 1),
+                    perform: (s) => {
+                        if (!spendTime(s, 1)) return { success: false, message: 'Not enough time.' };
+                        const result = declareCandidacy(s, pos.id);
+                        if (result.success) {
+                            addHistory(s, result.message, 'primary');
+                        }
+                        return result;
+                    }
+                });
+            }
+        } else {
+            // Campaign is active - add campaign actions
+            // Fund Campaign
+            actions.push({
+                id: 'fund_campaign',
+                label: 'Fund Campaign',
+                description: 'Transfer $5,000 from personal funds to campaign war chest.',
+                timeCost: 1,
+                available: (s) => 
+                    s.politics.campaignActive && 
+                    s.finances.cash >= 5000 &&
+                    canSpendTime(s, 1),
+                perform: (s) => {
+                    if (!spendTime(s, 1)) return { success: false, message: 'Not enough time.' };
+                    const result = fundCampaign(s, 5000);
+                    if (result.success) {
+                        addHistory(s, result.message);
+                    }
+                    return result;
+                }
+            });
+
+            // Hold Rally
+            actions.push({
+                id: 'hold_rally',
+                label: 'Hold Campaign Rally',
+                description: 'Hold a rally to boost voter support. Costs $5,000 from campaign funds.',
+                timeCost: 2,
+                available: (s) => 
+                    s.politics.campaignActive && 
+                    s.politics.campaignBudget >= 5000 &&
+                    canSpendTime(s, 2),
+                perform: (s) => {
+                    if (!spendTime(s, 2)) return { success: false, message: 'Not enough time.' };
+                    const result = holdRally(s);
+                    if (result.success) {
+                        addHistory(s, result.message);
+                    }
+                    return result;
+                }
+            });
+
+            // Resolve Election
+            actions.push({
+                id: 'resolve_election',
+                label: 'Resolve Election',
+                description: 'Election day is here! See if you won.',
+                timeCost: 1,
+                available: (s) => 
+                    s.politics.campaignActive && 
+                    canSpendTime(s, 1),
+                perform: (s) => {
+                    if (!spendTime(s, 1)) return { success: false, message: 'Not enough time.' };
+                    const result = resolveElection(s);
+                    if (result.won) {
+                        addHistory(s, result.message, 'primary');
+                    } else {
+                        addHistory(s, result.message);
+                    }
+                    return { success: result.won, message: result.message };
+                }
+            });
         }
     }
 
@@ -970,8 +1074,7 @@ export function performPoliticalAction(
     // policy and does not call through to the real enactPolicy() function.
     if (actionId === 'enact_policy' && typeof param === 'string') {
         if (!state.politics.active) return { success: false, message: 'Action not available.' };
-        if (state.timeBudget < 2) return { success: false, message: 'Not enough time this year.' };
-        state.timeBudget -= 2;
+        if (!spendTime(state, 2)) return { success: false, message: 'Not enough time this year.' };
         return enactPolicy(state, param);
     }
 
@@ -979,8 +1082,7 @@ export function performPoliticalAction(
     const preAction = PRE_OFFICE_ACTIONS.find(a => a.id === actionId);
     if (preAction) {
         if (!preAction.available(state)) return { success: false, message: 'Action not available.' };
-        if (state.timeBudget < preAction.timeCost) return { success: false, message: 'Not enough time this year.' };
-        state.timeBudget -= preAction.timeCost;
+        if (!spendTime(state, preAction.timeCost)) return { success: false, message: 'Not enough time this year.' };
         return preAction.perform(state);
     }
 
@@ -988,8 +1090,7 @@ export function performPoliticalAction(
     const govAction = GOVERNANCE_ACTIONS.find(a => a.id === actionId);
     if (govAction) {
         if (!govAction.available(state)) return { success: false, message: 'Action not available.' };
-        if (state.timeBudget < govAction.timeCost) return { success: false, message: 'Not enough time this year.' };
-        state.timeBudget -= govAction.timeCost;
+        if (!spendTime(state, govAction.timeCost)) return { success: false, message: 'Not enough time this year.' };
         return govAction.perform(state);
     }
 
@@ -1003,8 +1104,7 @@ export function performPoliticalAction(
     }
 
     if (actionId === 'hold_rally') {
-        if (state.timeBudget < 1) return { success: false, message: 'Not enough time this year.' };
-        state.timeBudget -= 1;
+        if (!spendTime(state, 1)) return { success: false, message: 'Not enough time this year.' };
         return holdRally(state);
     }
 

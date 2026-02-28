@@ -1,7 +1,8 @@
 import type { GameState } from '../core/GameState';
 import type { WrestlingContractClauses, WrestlingContractOffer } from '../core/GameState';
 import type { EducationLevel } from './EducationSystem';
-import { hasTimeForAction, spendActionTime } from './ActionTimeSystem';
+import { clamp, spendTime, canSpendTime } from '../core/StateUtils';
+import { getAvailablePoliticalActions } from './PoliticalSystem';
 
 export interface CareerDefinition {
   id: string;
@@ -63,7 +64,7 @@ function getFlagNumber(state: GameState, key: string, fallback = 0): number {
 }
 
 function setClampedFlag(state: GameState, key: string, value: number): void {
-  state.flags[key] = clampStat(value);
+  state.flags[key] = clamp(value);
 }
 
 function getInjuryYears(state: GameState): number {
@@ -83,6 +84,16 @@ function getCareerActionLocation(actionId: string, state: GameState): string | n
   if (actionId.startsWith('apply_')) return null;
   if (actionId.startsWith('wrestling_')) return 'Arena';
   if (actionId.startsWith('serial_') || actionId === 'unlock_serial_path') return null;
+
+  // Political actions always require Office location, regardless of career.field
+  const politicalActions = [
+    'join_political_party', 'run_independent', 'volunteer_campaign', 
+    'intern_city_hall', 'community_organizing', 'fund_campaign', 
+    'hold_rally', 'resolve_election'
+  ];
+  if (politicalActions.includes(actionId) || actionId.startsWith('declare_candidacy_') || actionId.startsWith('political_')) {
+    return 'Office';
+  }
 
   const field = state.career.field;
   if (!field) return null;
@@ -154,6 +165,23 @@ function generateContractClauses(baseSalary: number): WrestlingContractClauses {
     travelCovered: Math.random() < 0.86,
     exclusivity: Math.random() < 0.7 ? 'exclusive' : (Math.random() < 0.65 ? 'semi-exclusive' : 'open')
   };
+}
+
+function getCareerForPromotion(promotionId: string): CareerDefinition | null {
+  // Map promotion IDs to their corresponding career IDs
+  const promotionToCareerMap: Record<string, string> = {
+    'wwe': 'wwe_nxt_superstar',
+    'aew': 'aew_wrestler',
+    'njpw': 'njpw_dojo_wrestler',
+    'cmll': 'cmll_luchador',
+    'indie': 'indie_wrestler',
+    'global': 'global_circuit_wrestler'
+  };
+  
+  const careerId = promotionToCareerMap[promotionId];
+  if (!careerId) return null;
+  
+  return careerCatalog.find(c => c.id === careerId) || null;
 }
 
 function setWrestlingContract(state: GameState, def: CareerDefinition, termYears = 5): void {
@@ -277,16 +305,12 @@ function ensureWrestlingProfile(state: GameState): void {
   ensureWrestlingContacts(state);
 }
 
-function spendTime(state: GameState, timeCost: number): boolean {
-  return spendActionTime(state, timeCost);
-}
-
 function hasEducation(state: GameState, level: EducationLevel): boolean {
   return EDUCATION_RANK[state.education.level] >= EDUCATION_RANK[level];
 }
 
 function clampStat(value: number): number {
-  return Math.max(0, Math.min(100, Math.round(value)));
+  return clamp(value);
 }
 
 function clearCareer(state: GameState) {
@@ -843,6 +867,9 @@ export const CAREER_ACTIONS: CareerAction[] = [
       const offer = state.wrestlingContract?.rivalOffer;
       if (!offer) return;
 
+      // Check if switching to a different promotion
+      const isPromotionSwitch = state.wrestlingContract?.promotionId !== offer.promotionId;
+      
       state.wrestlingContract = {
         promotionId: offer.promotionId,
         promotionName: offer.promotionName,
@@ -853,6 +880,23 @@ export const CAREER_ACTIONS: CareerAction[] = [
         rivalOffer: null
       };
       state.finances.salary = Math.max(state.finances.salary, offer.annualSalary);
+      
+      // If switching promotions, update career to match
+      if (isPromotionSwitch) {
+        const newCareer = getCareerForPromotion(offer.promotionId);
+        if (newCareer) {
+          // Map current level to new promotion's title structure
+          // Keep the same level but use the new promotion's titles
+          const currentLevel = state.career.level;
+          const newTitle = newCareer.promotionTitles?.[Math.min(currentLevel - 1, (newCareer.promotionTitles?.length || 1) - 1)] 
+            || newCareer.title;
+          
+          state.career.id = newCareer.id;
+          state.career.title = newTitle;
+          state.career.specialization = newCareer.specialization;
+        }
+      }
+      
       state.history.push({ age: state.age, year: state.year, text: `You signed with ${offer.promotionName} on a ${offer.termYears}-year deal at $${offer.annualSalary.toLocaleString()}/yr.`, type: 'primary' });
       ensureWrestlingContacts(state);
     }
@@ -1115,11 +1159,22 @@ export function getCareerApplyActions(state: GameState): CareerAction[] {
 export function getAvailableCareerActions(state: GameState): CareerAction[] {
   const baseActions = CAREER_ACTIONS.filter(action =>
     action.isAvailable(state) &&
-    hasTimeForAction(state, action.timeCost) &&
+    canSpendTime(state, action.timeCost) &&
     meetsCareerLocation(state, action.id)
   );
   const applyActions = getCareerApplyActions(state).filter(action => meetsCareerLocation(state, action.id));
-  return [...baseActions, ...applyActions].filter(action => hasTimeForAction(state, action.timeCost));
+  
+  const politicalActions = getAvailablePoliticalActions(state)
+    .filter(action => canSpendTime(state, action.timeCost) && meetsCareerLocation(state, action.id))
+    .map((action): CareerAction => ({
+      id: action.id,
+      name: action.label,
+      timeCost: action.timeCost,
+      isAvailable: action.available,
+      perform: (s) => { action.perform(s); }
+    }));
+  
+  return [...baseActions, ...applyActions, ...politicalActions].filter(action => canSpendTime(state, action.timeCost));
 }
 
 export function performCareerAction(state: GameState, actionId: string) {

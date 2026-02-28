@@ -1,5 +1,6 @@
 import type { GameState } from '../core/GameState';
 import { events } from '../core/EventBus';
+import { clamp, addHistory } from '../core/StateUtils';
 
 export interface ActivityDef {
     id: string;
@@ -28,14 +29,14 @@ export const ACTIVITIES: Record<string, ActivityDef> = {
     'Go Home': {
         id: 'Go Home', name: 'Go Home', minAge: 0, cost: 0, timeCost: 0, isTravel: true, travelTo: 'Home', locationTimeGranted: 10,
         perform: (state) => {
-            state.history.push({ age: state.age, year: state.year, text: 'You went back home.', type: 'secondary' });
+            addHistory(state, 'You went back home.');
         }
     },
     'Go to School': {
         id: 'Go to School', name: 'Go to School', minAge: 5, cost: 0, timeCost: 2, isTravel: true, travelTo: 'School', locationTimeGranted: 8,
         isAvailable: (state) => (state.age >= 5 && state.age <= 17) || state.education.inProgram,
         perform: (state) => {
-            state.history.push({ age: state.age, year: state.year, text: 'You went to school.', type: 'secondary' });
+            addHistory(state, 'You went to school.');
             // Generate some classmates and teachers if you don't have enough
             const schoolNPCs = state.relationships.filter(r => r.location === 'School' && r.isAlive);
             if (schoolNPCs.length < 3) {
@@ -68,13 +69,13 @@ export const ACTIVITIES: Record<string, ActivityDef> = {
     'Go to Gym': {
         id: 'Go to Gym', name: 'Go to Gym', minAge: 14, cost: 0, timeCost: 1, isTravel: true, travelTo: 'Gym', locationTimeGranted: 6,
         perform: (state) => {
-            state.history.push({ age: state.age, year: state.year, text: 'You traveled to the gym.', type: 'secondary' });
+            addHistory(state, 'You traveled to the gym.');
         }
     },
     'Go to Movies': {
         id: 'Go to Movies', name: 'Go to Movies', minAge: 12, cost: 0, timeCost: 1, isTravel: true, travelTo: 'Movies', locationTimeGranted: 4,
         perform: (state) => {
-            state.history.push({ age: state.age, year: state.year, text: 'You traveled to the movie theater.', type: 'secondary' });
+            addHistory(state, 'You traveled to the movie theater.');
         }
     },
     'Go to Arena': {
@@ -359,10 +360,10 @@ export function performActivity(state: GameState, activityId: string) {
 
     state.activitiesExperience[activityId] = exp + 1;
 
-    // Clamp stats explicitly using Math.round to keep UI clean
+    // Clamp stats explicitly using clamp to keep UI clean
     Object.keys(state.stats).forEach(k => {
         const key = k as keyof typeof state.stats;
-        state.stats[key] = Math.max(0, Math.min(100, Math.round(state.stats[key])));
+        state.stats[key] = clamp(state.stats[key]);
     });
 
     events.emit('stat_changed', null);

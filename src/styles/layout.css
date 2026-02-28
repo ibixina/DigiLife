@@ -50,6 +50,22 @@ header.top-bar {
     color: var(--accent-color);
 }
 
+.year-display {
+    position: absolute;
+    right: -1.5rem;
+    top: 50%;
+    transform: translateY(-50%) rotate(90deg);
+    transform-origin: center center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--accent-color);
+    opacity: 0.25;
+    pointer-events: none;
+    z-index: 10;
+    letter-spacing: 0.15em;
+    white-space: nowrap;
+}
+
 main.content-area {
     flex-grow: 1;
     min-height: 0;

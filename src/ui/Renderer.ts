@@ -324,6 +324,12 @@ export class Renderer {
     this.el.appendChild(main);
     this.el.appendChild(nav);
 
+    // Year display - vertically rotated on the right side
+    const yearDisplay = document.createElement('div');
+    yearDisplay.className = 'year-display';
+    yearDisplay.innerText = String(engine.state.year);
+    this.el.appendChild(yearDisplay);
+
     main.scrollTop = main.scrollHeight;
   }
 
@@ -516,6 +522,16 @@ export class Renderer {
     if (shadow.unlocked) {
       chunks.push(`Shadow Career: ${shadow.mode} | Alias ${shadow.alias || 'Unknown'} | Heat ${shadow.heat}% | Notoriety ${shadow.notoriety}% | Kills ${shadow.kills}`);
     }
+    const pol = engine.state.politics;
+    if (pol.party || pol.active) {
+      const partyText = pol.party ? `Party: ${pol.party}` : '';
+      const expText = pol.totalPoliticalYears > 0 ? `Exp: ${pol.totalPoliticalYears}y` : '';
+      const officeText = pol.active ? `Office: ${pol.currentPosition}` : '';
+      const parts = [partyText, expText, officeText].filter(Boolean);
+      if (parts.length > 0) {
+        chunks.push(`Politics: ${parts.join(' | ')}`);
+      }
+    }
     status.innerText = chunks.join('\n');
 
     const choicesContainer = document.createElement('div');
@@ -551,6 +567,8 @@ export class Renderer {
         return engine.state.career.field || 'Career';
       }
       if (actionId.startsWith('political_')) return 'Politics';
+      if (actionId.startsWith('declare_candidacy_')) return 'Politics';
+      if (['join_political_party', 'run_independent', 'volunteer_campaign', 'intern_city_hall', 'community_organizing'].includes(actionId)) return 'Politics';
       return 'Career';
     };
 

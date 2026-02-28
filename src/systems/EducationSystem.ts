@@ -1,5 +1,5 @@
 import type { GameState } from '../core/GameState';
-import { hasTimeForAction, spendActionTime } from './ActionTimeSystem';
+import { spendTime, canSpendTime, addHistory } from '../core/StateUtils';
 
 export type EducationLevel = 'None' | 'Primary' | 'Secondary' | 'High School' | 'Bachelor' | 'Master' | 'Doctorate';
 
@@ -106,12 +106,7 @@ function enrollInProgram(state: GameState, programId: string) {
   state.education.programYearsCompleted = 0;
   state.education.studyEffort = 0;
 
-  state.history.push({
-    age: state.age,
-    year: state.year,
-    text: `You enrolled in ${program.name}.`,
-    type: 'primary'
-  });
+  addHistory(state, `You enrolled in ${program.name}.`, 'primary');
 }
 
 export const EDUCATION_ACTIONS: EducationAction[] = [
@@ -122,12 +117,12 @@ export const EDUCATION_ACTIONS: EducationAction[] = [
     cost: 0,
     isAvailable: (state) => state.age >= 5 && (state.age <= 17 || state.education.inProgram),
     perform: (state) => {
-      if (!spendActionTime(state, 2)) return;
+      if (!spendTime(state, 2)) return;
       state.education.studyEffort += 1;
       state.stats.smarts = Math.min(100, state.stats.smarts + Math.floor(Math.random() * 5) + 2);
       state.stats.willpower = Math.min(100, state.stats.willpower + 1);
       state.stats.happiness = Math.max(0, state.stats.happiness - 1);
-      state.history.push({ age: state.age, year: state.year, text: 'You studied hard.', type: 'secondary' });
+      addHistory(state, 'You studied hard.');
     }
   },
   {
@@ -137,7 +132,7 @@ export const EDUCATION_ACTIONS: EducationAction[] = [
     cost: 0,
     isAvailable: (state) => !state.education.inProgram && state.age >= 18 && hasLevel(state, 'High School') && !hasLevel(state, 'Bachelor'),
     perform: (state) => {
-      if (!spendActionTime(state, 1)) return;
+      if (!spendTime(state, 1)) return;
       enrollInProgram(state, 'engineering_bachelor');
     }
   },
@@ -148,7 +143,7 @@ export const EDUCATION_ACTIONS: EducationAction[] = [
     cost: 0,
     isAvailable: (state) => !state.education.inProgram && state.age >= 22 && hasLevel(state, 'Bachelor') && !hasLevel(state, 'Master'),
     perform: (state) => {
-      if (!spendActionTime(state, 1)) return;
+      if (!spendTime(state, 1)) return;
       enrollInProgram(state, 'engineering_master');
     }
   },
@@ -159,7 +154,7 @@ export const EDUCATION_ACTIONS: EducationAction[] = [
     cost: 0,
     isAvailable: (state) => !state.education.inProgram && state.age >= 18 && hasLevel(state, 'High School') && !hasLevel(state, 'Bachelor'),
     perform: (state) => {
-      if (!spendActionTime(state, 1)) return;
+      if (!spendTime(state, 1)) return;
       enrollInProgram(state, 'prelaw_bachelor');
     }
   },
@@ -170,7 +165,7 @@ export const EDUCATION_ACTIONS: EducationAction[] = [
     cost: 0,
     isAvailable: (state) => !state.education.inProgram && state.age >= 21 && hasLevel(state, 'Bachelor') && !hasLevel(state, 'Doctorate'),
     perform: (state) => {
-      if (!spendActionTime(state, 1)) return;
+      if (!spendTime(state, 1)) return;
       enrollInProgram(state, 'law_jd');
     }
   },
@@ -185,7 +180,7 @@ export const EDUCATION_ACTIONS: EducationAction[] = [
       state.flags.license_bar !== true &&
       state.flags.bar_exam_last_attempt_year !== state.year,
     perform: (state) => {
-      if (!spendActionTime(state, 2)) return;
+      if (!spendTime(state, 2)) return;
 
       if (state.finances.cash >= 2500) {
         state.finances.cash -= 2500;
@@ -202,16 +197,22 @@ export const EDUCATION_ACTIONS: EducationAction[] = [
 
       if (Math.random() < passChance) {
         state.flags.license_bar = true;
-        state.history.push({ age: state.age, year: state.year, text: 'You passed the bar exam and became a licensed attorney.', type: 'primary' });
+        addHistory(state, 'You passed the bar exam and became a licensed attorney.', 'primary');
       } else {
-        state.history.push({ age: state.age, year: state.year, text: 'You failed the bar exam. You can attempt it again next year.', type: 'primary' });
+        addHistory(state, 'You failed the bar exam. You can attempt it again next year.', 'primary');
       }
     }
   }
 ];
 
 export function getAvailableEducationActions(state: GameState): EducationAction[] {
-  return EDUCATION_ACTIONS.filter(action => action.isAvailable(state) && hasTimeForAction(state, action.timeCost));
+  return EDUCATION_ACTIONS.filter(action => {
+    // Study actions require School location
+    if (action.id === 'study_hard' && state.currentLocation !== 'School') {
+      return false;
+    }
+    return action.isAvailable(state) && canSpendTime(state, action.timeCost);
+  });
 }
 
 export function performEducationAction(state: GameState, actionId: string) {
@@ -223,17 +224,17 @@ export function performEducationAction(state: GameState, actionId: string) {
 export function processEducationYear(state: GameState) {
   if (state.age === 5 && state.education.level === 'None') {
     state.education.level = 'Primary';
-    state.history.push({ age: state.age, year: state.year, text: 'You started primary school.', type: 'primary' });
+    addHistory(state, 'You started primary school.', 'primary');
   }
 
   if (state.age === 13 && EDUCATION_RANK[state.education.level] < EDUCATION_RANK.Secondary) {
     state.education.level = 'Secondary';
-    state.history.push({ age: state.age, year: state.year, text: 'You started secondary school.', type: 'primary' });
+    addHistory(state, 'You started secondary school.', 'primary');
   }
 
   if (state.age === 17 && EDUCATION_RANK[state.education.level] < EDUCATION_RANK['High School']) {
     state.education.level = 'High School';
-    state.history.push({ age: state.age, year: state.year, text: 'You completed high school.', type: 'primary' });
+    addHistory(state, 'You completed high school.', 'primary');
   }
 
   if (state.education.inProgram) {
@@ -253,7 +254,7 @@ export function processEducationYear(state: GameState) {
       const scholarship = Math.floor(program.annualTuition * (0.2 + Math.random() * 0.3));
       annualTuition = Math.max(0, annualTuition - scholarship);
       state.education.scholarships += scholarship;
-      state.history.push({ age: state.age, year: state.year, text: `You received a scholarship of $${scholarship.toLocaleString()}.`, type: 'secondary' });
+      addHistory(state, `You received a scholarship of $${scholarship.toLocaleString()}.`);
     }
 
     payCost(state, annualTuition);
@@ -268,7 +269,7 @@ export function processEducationYear(state: GameState) {
       state.education.programName = null;
       state.education.programYearsCompleted = 0;
       state.education.studyEffort = 0;
-      state.history.push({ age: state.age, year: state.year, text: 'You were academically dismissed from your degree program.', type: 'primary' });
+      addHistory(state, 'You were academically dismissed from your degree program.', 'primary');
       return;
     }
 
@@ -281,7 +282,7 @@ export function processEducationYear(state: GameState) {
       state.education.programId = null;
       state.education.programName = null;
       state.education.programYearsCompleted = 0;
-      state.history.push({ age: state.age, year: state.year, text: `You graduated with ${program.name}.`, type: 'primary' });
+      addHistory(state, `You graduated with ${program.name}.`, 'primary');
     }
   }
 

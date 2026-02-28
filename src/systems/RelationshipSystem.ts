@@ -1,12 +1,9 @@
 import type { GameState, Relationship } from '../core/GameState';
 import { events } from '../core/EventBus';
+import { clamp } from '../core/StateUtils';
 
 const FAMILY_TYPES: Relationship['type'][] = ['Father', 'Mother', 'Brother', 'Sister', 'Child'];
 const NON_ROMANCE_TYPES: Relationship['type'][] = [...FAMILY_TYPES, 'Pet', 'Teacher'];
-
-function clamp01(value: number): number {
-    return Math.max(0, Math.min(100, Math.round(value)));
-}
 
 function clearRomanceFlagsForNpc(state: GameState, npcId: string) {
     if ((state.flags.spouseId && state.flags.spouseId === npcId) || (state.flags.partnerId && state.flags.partnerId === npcId)) {
@@ -28,13 +25,13 @@ function markNpcKilledByPlayer(state: GameState, npc: Relationship, reason: stri
         type: 'primary'
     });
 
-    state.stats.karma = clamp01(state.stats.karma - 30);
-    state.stats.craziness = clamp01(state.stats.craziness + 8);
+    state.stats.karma = clamp(state.stats.karma - 30);
+    state.stats.craziness = clamp(state.stats.craziness + 8);
 
     if (state.serialKiller.unlocked && !state.serialKiller.caught) {
         state.serialKiller.kills += 1;
-        state.serialKiller.notoriety = clamp01(state.serialKiller.notoriety + 9);
-        state.serialKiller.heat = clamp01(state.serialKiller.heat + 14);
+        state.serialKiller.notoriety = clamp(state.serialKiller.notoriety + 9);
+        state.serialKiller.heat = clamp(state.serialKiller.heat + 14);
         state.serialKiller.lastKillYear = state.year;
         if (state.serialKiller.mode === 'full_time') {
             const payday = Math.floor(Math.random() * 18000) + 4000;
@@ -315,8 +312,8 @@ export const INTERACTIONS: Record<string, InteractionDef> = {
         requiresSameLocation: false,
         perform: (state, npc) => {
             npc.familiarity = Math.min(100, npc.familiarity + 8);
-            state.serialKiller.heat = clamp01(state.serialKiller.heat + 6);
-            state.stats.craziness = clamp01(state.stats.craziness + 2);
+            state.serialKiller.heat = clamp(state.serialKiller.heat + 6);
+            state.stats.craziness = clamp(state.stats.craziness + 2);
             state.history.push({ age: state.age, year: state.year, text: `You quietly tracked ${npc.name}'s routines.`, type: 'secondary' });
         }
     },
@@ -331,9 +328,9 @@ export const INTERACTIONS: Record<string, InteractionDef> = {
         isAvailable: (state, npc) => npc.isAlive && state.flags[`plot_${npc.id}`] !== state.year,
         perform: (state, npc) => {
             state.flags[`plot_${npc.id}`] = state.year;
-            state.stats.karma = clamp01(state.stats.karma - 8);
-            state.stats.craziness = clamp01(state.stats.craziness + 4);
-            state.serialKiller.heat = clamp01(state.serialKiller.heat + 5);
+            state.stats.karma = clamp(state.stats.karma - 8);
+            state.stats.craziness = clamp(state.stats.craziness + 4);
+            state.serialKiller.heat = clamp(state.serialKiller.heat + 5);
             state.history.push({ age: state.age, year: state.year, text: `You began planning ${npc.name}'s death.`, type: 'primary' });
         }
     },
@@ -356,9 +353,9 @@ export const INTERACTIONS: Record<string, InteractionDef> = {
             } else {
                 npc.relationshipToPlayer = 0;
                 npc.type = 'Enemy';
-                state.stats.health = clamp01(state.stats.health - (Math.floor(Math.random() * 20) + 8));
-                state.stats.happiness = clamp01(state.stats.happiness - 10);
-                state.serialKiller.heat = clamp01(state.serialKiller.heat + 20);
+                state.stats.health = clamp(state.stats.health - (Math.floor(Math.random() * 20) + 8));
+                state.stats.happiness = clamp(state.stats.happiness - 10);
+                state.serialKiller.heat = clamp(state.serialKiller.heat + 20);
                 state.history.push({ age: state.age, year: state.year, text: `You failed to kill ${npc.name} and they now see you as an enemy.`, type: 'primary' });
             }
         }
@@ -377,7 +374,7 @@ export const INTERACTIONS: Record<string, InteractionDef> = {
             if (success) {
                 markNpcKilledByPlayer(state, npc, 'A hired killer completed the job.');
             } else {
-                state.serialKiller.heat = clamp01(state.serialKiller.heat + 18);
+                state.serialKiller.heat = clamp(state.serialKiller.heat + 18);
                 state.flags.wanted = Math.random() < 0.35 || state.flags.wanted === true;
                 state.history.push({ age: state.age, year: state.year, text: `The hired killer failed to eliminate ${npc.name}, and the operation drew attention.`, type: 'primary' });
             }
@@ -500,7 +497,7 @@ export const INTERACTIONS: Record<string, InteractionDef> = {
             npc.smarts += Math.floor(Math.random() * 8) + 4;
             npc.happiness += Math.floor(Math.random() * 6) + 2;
             npc.relationshipToPlayer += Math.floor(Math.random() * 7) + 5;
-            state.career.performance = clamp01(state.career.performance + 1);
+            state.career.performance = clamp(state.career.performance + 1);
             state.history.push({ age: state.age, year: state.year, text: `You mentored ${npc.name} and helped their career growth.`, type: 'secondary' });
         }
     },
@@ -516,7 +513,7 @@ export const INTERACTIONS: Record<string, InteractionDef> = {
         perform: (state, npc) => {
             npc.happiness -= Math.floor(Math.random() * 12) + 6;
             npc.relationshipToPlayer -= Math.floor(Math.random() * 14) + 7;
-            state.stats.karma = clamp01(state.stats.karma - 6);
+            state.stats.karma = clamp(state.stats.karma - 6);
             state.history.push({ age: state.age, year: state.year, text: `You quietly undermined ${npc.name}'s standing at work.`, type: 'primary' });
         }
     }
@@ -554,20 +551,20 @@ export function interactWithNPC(state: GameState, npcId: string, actionId: strin
 
     act.perform(state, npc);
 
-    npc.relationshipToPlayer = clamp01(npc.relationshipToPlayer);
-    npc.familiarity = clamp01(npc.familiarity);
-    npc.health = clamp01(npc.health);
-    npc.happiness = clamp01(npc.happiness);
-    npc.smarts = clamp01(npc.smarts);
-    npc.looks = clamp01(npc.looks);
+    npc.relationshipToPlayer = clamp(npc.relationshipToPlayer);
+    npc.familiarity = clamp(npc.familiarity);
+    npc.health = clamp(npc.health);
+    npc.happiness = clamp(npc.happiness);
+    npc.smarts = clamp(npc.smarts);
+    npc.looks = clamp(npc.looks);
 
     Object.keys(state.stats).forEach(k => {
         const key = k as keyof typeof state.stats;
-        state.stats[key] = clamp01(state.stats[key]);
+        state.stats[key] = clamp(state.stats[key]);
     });
 
-    state.serialKiller.heat = clamp01(state.serialKiller.heat);
-    state.serialKiller.notoriety = clamp01(state.serialKiller.notoriety);
+    state.serialKiller.heat = clamp(state.serialKiller.heat);
+    state.serialKiller.notoriety = clamp(state.serialKiller.notoriety);
 
     events.emit('stat_changed', null);
 }
